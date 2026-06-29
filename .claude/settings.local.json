@@ -1,0 +1,16 @@
+{
+  "autoMemoryEnabled": false,
+  "disableBundledSkills": true,
+  "env": {
+    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+    "CLAUDE_CODE_DISABLE_BUNDLED_SKILLS": "1"
+  },
+  "claudeMdExcludes": [
+    "C:\\Users\\27370\\Desktop\\project\\CLAUDE.md",
+    "C:\\Users\\27370\\Desktop\\project\\.claude\\CLAUDE.md"
+  ],
+  "disableAllProjectMcpServers": false,
+  "permissions": {
+    "deny": []
+  }
+}
