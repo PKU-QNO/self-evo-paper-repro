@@ -1,7 +1,7 @@
 # CLAUDE.md — self-evo-paper-repro 工作区
 
 > 这是 claude 在本工作区启动时强制读的简短路由文件。只放路由和红线，不塞具体流程。
-> 流程在 `.claude/skills/main-agent/workflow/` 和 `.claude/skills/sub-agent/workflow/` 里。
+> 流程在 `.claude/skills/` 下的 4 个 agent 身份 skill 里。
 
 ## 工作区身份
 
@@ -9,13 +9,47 @@
 
 ## 进入 workflow 的判定（重要）
 
-**并非所有任务都要遵循 10 步 workflow。** 判定规则：
+**并非所有任务都要遵循完整 workflow。** 判定规则：
 
-- 用户明确要复现一份**新论文**（或新一篇/新一张图）→ 进入完整 10 步 workflow
-- 用户在调试某个步骤、改某个 skill、问问题、跑单独脚本、看已有结果 → **不进入 workflow**，直接做
-- 模糊时，问用户一句："这次是复现新论文，还是局部任务？"
+- 用户明确要复现一份**新论文**（或新一篇/新一张图）→ 进入 10 步复现 workflow
+- 用户说"跑自迭代"（攒够后人工触发）→ 进入 5 步自迭代 workflow
+- 用户在调试某个步骤、改某个 skill、问问题、跑单独脚本、看已有结果 → **不进入任何 workflow**，直接做
+- 模糊时，问用户一句："这次是复现新论文、跑自迭代，还是局部任务？"
 
-不要把每个请求都套进 10 步，那样简单活也被拖长。
+不要把每个请求都套进 workflow，那样简单活也被拖长。
+
+## 身份选择逻辑
+
+当前系统有 4 个 agent 身份 skill，分两套 workflow。用户表达意图后选择身份：
+
+| 用户意图 | 选择身份 | 加载 skill | 行为 |
+|---------|---------|-----------|------|
+| "复现这篇新论文" | → `main-agent` | 读 main-agent skill | 进入 10 步复现编排 |
+| "跑自迭代"、"提炼经验" | → `evolution-agent` | 读 evolution-agent skill | 进入 5 步自迭代编排 |
+| "帮我调试/算个数/看结果" | → 不进 workflow | 不加载身份 skill | 直接做 |
+
+身份选择只决定加载哪个 agent skill，不换模型。两套 workflow 互不交叉。
+
+## 4 agent 身份 skill
+
+| 身份 | skill 名 | 所属 workflow | 职责 |
+|------|---------|-------------|------|
+| 复现编排者 | `main-agent` | 复现 | 编排 10 步复现流程，spawn 子 agent、校验报告、汇总结果 |
+| 复现执行者 | `sub-agent` | 复现 | 执行单步任务（读图抽参、搭模型、跑代码、写工作报告） |
+| 自迭代编排者 | `evolution-agent` | 自迭代 | 编排 5 步自迭代流程（审查→聚类→改 skill→验证→报告） |
+| 自迭代执行者 | `sub-E-agent` | 自迭代 | 执行审查 capsule、改 skill 草稿、跑验证等具体任务 |
+
+**三层 spawn 规则**（复现和自迭代共用）：
+- 编排者（main-agent / evolution-agent）不亲自做隔离活
+- 执行者（sub-agent / sub-E-agent）做具体步骤
+- 执行者可以 spawn 子子 agent 做单点小活（提取数值、跑 verifier、查公式），**第 3 层不再 spawn**
+
+## .human/ 与 .claude/ 双目录
+
+- `.human/skills/` = **中文设计稿**，人是读者。当前所有 9 个 skill 的中文设计存这里。
+- `.claude/skills/` = **英文 prompt-engineered 版**，agent 实际运行时读。当前只有从 optics_agent 复制的领域 skill，4 个 agent 身份 skill 待后期写。
+- **现阶段**：`.claude/skills/` 镜像 `.human/skills/` 内容（同为中文），等设计稳定后 `.claude/skills/` 翻译为英文。
+- **双写机制**：workflow 跑时更新 skill，要同时写 `.human/`（人看的设计稿）和 `.claude/`（agent 读的执行版）。
 
 ## 关键节点必须请求用户意见（重要）
 
@@ -27,14 +61,6 @@
 4. **遇到缺失信息（论文没给参数、需要 GUI 模板等）时**——问用户要，不要瞎猜硬跑
 
 中间步骤 agent 自由跑，这 4 类节点必须停。
-
-## 三层 agent 架构
-
-- **主 agent**（你，claude 启动时）：读 `main-agent` skill 编排，不亲自做隔离活
-- **执行 agent / 子 agent**：被主 agent spawn，读 `sub-agent` skill，做具体步骤
-- **子子 agent**：被子 agent spawn 解决小问题（提取一张图数值、跑一个 verifier 等），第 3 层不再 spawn
-
-主 agent 每走一步前读 `main-agent/workflow/0X-xxx/SKILL.md`，把"干什么+输出要求"传达给要 spawn 的子 agent；子 agent 读 `sub-agent/workflow/0X-xxx/SKILL.md` 拿"怎么干+预制脚本"。
 
 ## 目录约定
 
@@ -69,8 +95,10 @@ reproduction_test/ -> optics_agent/reproduction_test (junction)
 
 | 任务 | skill |
 |------|-------|
-| 主 agent 编排 | `main-agent` |
-| 子 agent 执行 | `sub-agent` |
+| 复现编排 | `main-agent` |
+| 复现执行 | `sub-agent` |
+| 自迭代编排 | `evolution-agent` |
+| 自迭代执行 | `sub-E-agent` |
 | Mie 理论复现 | `optics-mie-reproduction` |
 | Magnus 平台操作 | `optics-magnus-platform` |
 | Magnus artifact 格式 | `optics-magnus-artifacts` |
