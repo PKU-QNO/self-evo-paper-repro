@@ -2,16 +2,26 @@
 
 ## 具体怎么干
 
-### 双报告
-**技术报告**（给老师看）：
-- 推导+代码+结果+对比+结论
-- 物理结论基于数值
-- 标注复现 level（0-5）
+### 4 类文档产出（初稿，主 agent step11 定稿）
 
-**经验报告**（给自迭代用）：
-- 本次学到的（物理事实、参数范围）
-- 踩的坑（公式易错点、单位陷阱）
-- skill 改进建议（带适用边界，不写通用规律）
+子 agent 产 4 类文档初稿放沙箱，主 agent 汇总定稿后投到最终目录。
+
+**① 全过程报告**（最详细，给人审查留痕）
+- 草稿：`.work/<case>/full_report_draft.md`
+- 完整记录每步操作、参数、问题、数值
+
+**② 简报**（给老师/PI 一页摘要）
+- 草稿：`.work/<case>/brief_draft.md`
+- 论文名/目标/复现 level/关键数字/一句话结论
+
+**③ SKILL 更改建议**
+- 草稿：`.work/self-iteration/<paper>.skill-suggestion-draft.md`
+- 技能缺陷/改进点，带 tier、适用边界、来源 case
+- 只增不删
+
+**④ 蓝图建议**
+- 草稿：`.work/self-iteration/<paper>.blueprint-suggestion-draft.md`
+- 上 Magnus 的蓝图设计方案，纯 Python 则注明"本次无需蓝图"
 
 ### benchmark 追加
 - 按 `optics-mie-reproduction/references/benchmark_format.md` 格式
@@ -36,10 +46,13 @@
 
 ## 输出约定
 
-- 技术报告：`.work/<case>/technical_report.md`
-- 经验报告：`.work/<case>/experience_report.md`
+- 全过程报告草稿：`.work/<case>/full_report_draft.md`
+- 简报草稿：`.work/<case>/brief_draft.md`
+- SKILL 更改建议草稿：`.work/self-iteration/<paper>.skill-suggestion-draft.md`
+- 蓝图建议草稿：`.work/self-iteration/<paper>.blueprint-suggestion-draft.md`
 - benchmark 草稿：`.work/self-iteration/benchmark_<case>.yaml`
-- skill 草稿：`.work/self-iteration/<skill>.skill.yaml`（如需）
+- skill 改进草稿：`.work/self-iteration/<skill>.skill.yaml`（如需）
+- 模板参考：`main-agent/references/main_report_template.md`
 
 ## 常见坑
 

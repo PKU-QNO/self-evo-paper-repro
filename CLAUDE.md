@@ -3,6 +3,14 @@
 > 这是 claude 在本工作区启动时强制读的简短路由文件。只放路由和红线，不塞具体流程。
 > 流程在 `.claude/skills/` 下的 4 个 agent 身份 skill 里。
 
+## 输出规范（强制）
+
+**全程中文输出，所有文档用 Markdown 写作。** 这可能下降性能但方便用户审查，优先可读性。
+- 所有 agent 的对话回复、报告、笔记、SKILL 内容一律中文
+- 公式用 `$...$` / `$$...$$`（不用反引号或 `\(...\)`）
+- 代码注释和标识符遵循项目既有约定（可英文）
+- 给用户看的文档要结构化、用户可读，不是给机器的裸数据
+
 ## 工作区身份
 
 光学论文复现自进化 agent。交付 SKILL 蓝图（主）+ benchmark 数据（次），不交付自迭代内容本身。自迭代是手段。
@@ -66,22 +74,59 @@
 
 ```
 .paper/        论文原文区（只读，不污染）
+  ├── scattering.pdf   Bohren & Huffman 教材（核心公式主源）
+  └── mie/             11 篇 Mie 论文 PDF
 .work/         agent 工作沙箱（软约束）
   ├── .sub-report/    子 agent 完整报告统一放这里
-  ├── mie/            Mie 复现过程文件
-  ├── comsol/         COMSOL 复现过程文件
-  ├── self-iteration/ .skill.yaml / .blueprint.yaml 沙箱草稿（不许删）
+  ├── .todo/<paper>/  单论文 workflow 过程文件 + skill 草稿缓冲
+  ├── .evolution/<timestamp>/  evolution 进行中工作区
   └── memento-cache/
+toEflow/       workflow→evolution 缓冲（只增不删）
+  ├── <paper>.skill.yaml       workflow 提交的 skill 草稿
+  └── <paper>.todo-entry.md    workflow 提交的迭代需求
+.E-history/    evolution 历史报告（按次数排序，01 开机）
+  ├── 01-evolution-report.md
+  └── 02-evolution-report.md
 .result/       最终交付区，主 agent 工作结束前从 .work 复制有用内容过来
+todo.md        全局日志，每次 workflow/Eflow 结束前填一段
 papers/        -> optics_agent/papers (junction)
 reproduction_test/ -> optics_agent/reproduction_test (junction)
 ```
 
+论文命名规则：`MMDD-NN-papername-vN`，如 `0629-01-akimov-mie-v1`
+
+## 记忆要求（每个 agent 都遵守）
+
+**每个 agent（main-agent / sub-agent / evolution-agent / sub-E-agent）开始行动前必须做：**
+1. 搜索 memento 记忆库（`memory_search`），找和当前任务相关的已有记忆，避免重复劳动
+2. 结束前必须更新记忆（`memory_store` / `decisions_log` / `pitfalls_log`），存本次的关键事实/决策/教训
+
+子 agent 没有自动记忆注入，主 agent spawn 时在指令里强制要求这两步。
+
+## 子 agent tools 控制（重要）
+
+子 agent 的 MCP 工具描述是**全量注入** context（不是懒加载），会占 context window。主 agent spawn 子 agent 时必须用 `tools` 字段（allowlist 模式）控制暴露的工具：
+
+```
+tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill
+```
+
+- allowlist 模式：只列出内置工具，MCP 工具自动排除，避免 context 膨胀
+- `ToolSearch` 必须显式包含（否则 MCP 工具注册了但无法调用）
+- `Skill` 放行让子 agent 能跑 skill-print.py 获得技能列表
+- 需要某个 MCP 工具时才显式列出，不要全量暴露
+- `tools` 字段不支持 `mcp__*` 通配符，要限 MCP 用 `disallowedTools`
+
 ## 沙箱草稿规则（防回滚崩溃）
 
-**更新 `.claude/skills/` 任何 skill 前，必须先在 `.work/self-iteration/<skill-name>.skill.yaml` 写草稿，草稿不许删。**
+**单论文 workflow 的 step 10**：把 skill 草稿写到 `.work/.todo/<paper-name>/`，不提交 `.claude/`。workflow 结束前把要给 evolution 用的 skill 草稿 + 迭代需求扔进 `toEflow/`（只增不删）。不跑 replay（单论文做不到）。
 
-草稿字段：改了什么 / 为什么改 / 验证结果 / 来源 case。主 agent 工作结束前把通过 gate 的草稿同步到 `.claude`，未通过的留沙箱。沙箱草稿是变更留痕，防回滚崩溃。
+**evolution-agent**：读 `toEflow/` 所有草稿做批量治理。改 skill 前先在 `.work/.evolution/<timestamp>/` 写草稿，通过 human gate 的才同步到 `.claude/` + `.human/`。草稿不许删。
+
+**validate_and_replay 实现**（E-flow 不调 W-flow）：
+- 层 A（改提示词备注/注意事项）：sub-E-agent 跑旧代码 + verifier + benchmark 对比，E-flow 自洽
+- 层 B（改流程步骤）：sub-E-agent 重跑 step 06-08 旧代码，E-flow 自洽
+- 层 C（改核心方法/公式来源）：报告"需人工开 W-flow 重跑"，human gate 决定，不重跑标"未验证风险保留"
 
 ## 安全红线
 

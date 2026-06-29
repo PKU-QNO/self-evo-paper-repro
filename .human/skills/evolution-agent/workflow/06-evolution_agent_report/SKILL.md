@@ -6,6 +6,8 @@ evolution-agent 写全局总结报告。sub-E-agent 的各步是分步报告，�
 
 ## 这是你（evolution-agent）自己做的，不是 spawn sub-E-agent
 
+报告模板见 `references/evolution_history_template.md`，写到 `.E-history/NN-evolution-report.md`。
+
 读 `references/main_report_template.md`，填 8 个字段：
 1. 本次自迭代概况
 2. 6 步执行轨迹（引用各步 sub-E-agent 报告路径）

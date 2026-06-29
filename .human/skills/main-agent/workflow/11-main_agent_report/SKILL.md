@@ -6,6 +6,33 @@
 
 ## 这是主 agent 你自己做的，不是 spawn 子 agent
 
+### 4 类文档汇总定稿
+
+子 agent step10 产出 4 类文档初稿放沙箱，本步你来做汇总定稿：
+
+**1. 全过程报告**（`.result/<paper>/full_report.md`）
+- 基于子 agent 草稿 `.work/<case>/full_report_draft.md`
+- 补充主 agent 编排视角的全局判断
+- 每步引用于 agent 报告的路径
+- 保留决策过程和问题记录
+
+**2. 简报**（`.result/<paper>/brief.md` + 更新 `todo.md`）
+- ★ 主 agent 把关：精简到一页，突出 PI 关心的结论
+- 不要技术细节堆积，要结果 level + 关键数值 + 一句话结论
+- 同时更新 `todo.md` 中本 case 的状态
+
+**3. SKILL 更改建议**（`toEflow/<paper>.skill-suggestion.md`）
+- 基于子 agent 草稿，主 agent 确认 tier 级别和适用边界
+- 只增不删原则
+- 如果子 agent 建议多个，主 agent 排序优先级
+
+**4. 蓝图建议**（`toEflow/<paper>.blueprint-suggestion.md`）
+- ★ 主 agent 把关：确认是否需要上 Magnus
+- 如果需要：检查蓝图是否有扫描参数泛化能力（见 template）
+- 如果纯 Python：明确写"本次无需蓝图"
+
+### 填写主 agent 报告
+
 读 `references/main_report_template.md`，填 8 个字段：
 1. 本次复现概况
 2. 10 步执行轨迹（引用各步子 agent 报告路径）
