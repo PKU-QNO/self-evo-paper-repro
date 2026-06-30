@@ -8,7 +8,23 @@
 
 ## 0. 一句话定位
 
-SEPR（self-evo-paper-repro）是 optics_agent 的姊妹工作区，用于光学论文复现 + skill/蓝图自进化实验。采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub-sub-agent），替代 workflow 状态机。4 个 agent 身份（复现 main+sub / 自迭代 evolution+sub-E），两套对称 workflow（10 步复现 + 6 步自迭代）。
+**两个工作区分工**：
+- **optics_agent**（`C:\Users\27370\Desktop\project\optics_agent`）= **设计 SEPR 的元工作区**。在这里设计 SEPR 的框架（4 agent 架构、workflow、spawn 模版、六维裁决、失败防护等），也做自身的 COMSOL/Magnus 工作。
+- **SEPR**（本工作区，`C:\Users\27370\Desktop\project\self-evo-paper-repro`）= **agent 复现论文的执行工作区**。Claude Code 在这里以 main-agent 身份跑 10 步复现 workflow，或以 evolution-agent 身份跑自迭代。
+
+**人工预训练工作流**（核心，非 E-flow 自动）：
+```
+1. optics_agent 设计 SEPR 框架（已完成设计阶段）
+2. CC 在 SEPR 区复现一篇论文（用 .claude/skills/ 详细版）
+3. 把 SEPR 复现过程的上下文（WORK_LOG.md + 复现报告）发给 optics_agent 的 CC
+4. optics_agent 的 CC 读 SEPR 经验，人工改进 SEPR 设计（不直接用 E-flow 自迭代）
+5. 重跑论文，验证改进
+6. 循环 2-5 = 人工预训练
+```
+
+**关键边界**：SEPR 复现论文时反馈的经验，由 optics_agent 的 CC 人工审查后改进设计，不是 SEPR 自己跑 E-flow 自动改。E-flow 是后期才用的（攒够 case 后人工开专门 evolution session）。
+
+SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub-sub-agent），替代 workflow 状态机。4 个 agent 身份（复现 main+sub / 自迭代 evolution+sub-E），两套对称 workflow（10 步复现 + 6 步自迭代）。
 
 ---
 
@@ -414,6 +430,12 @@ evolution step02 建，冲突触发：同现象不同结论/同参数不同值/�
 
 ## 9. 给未来 agent / 新对话的快速入口
 
+### 两个工作区的角色（重要）
+- **optics_agent** = 设计 SEPR 的元工作区（设计框架 + COMSOL/Magnus 工作）
+- **SEPR**（本工作区）= agent 复现论文的执行工作区
+- 人工预训练循环：设计 → SEPR 复现 → 经验反馈给 OA 的 CC → OA 改进设计 → 重跑
+- **给 OA 的 CC 的提醒**：你改进 SEPR 设计时，读本 WORK_LOG.md 恢复 SEPR 上下文，不要照搬 SEPR 的复现机制到 optics_agent（OA 是 Magnus+COMSOL 工作区，不是复现 agent）
+
 ### 恢复上下文顺序
 1. 读 `WORK_LOG.md`（本文档）——完整工作记录
 2. 读 `CLAUDE.md`——工作区路由+红线+全规范
@@ -421,6 +443,7 @@ evolution step02 建，冲突触发：同现象不同结论/同参数不同值/�
 4. 读 `PROJECT_STATUS.md`——状态总览
 5. 身份选择：复现→main-agent，自迭代→evolution-agent
 6. 子 agent 被 spawn 时先跑 `python .claude/skill-print.py`（需 `PYTHONUTF8=1`）获得技能列表
+7. **CC 跑复现时读 `.claude/skills/`（中文详细版，6465 行），不读 `.human/`（大纲简略）**
 
 ### 关键约束
 - 全程中文输出 + Markdown 写作（公式用 `$...$`）
