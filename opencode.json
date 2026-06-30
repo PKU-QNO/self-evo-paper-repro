@@ -1,0 +1,108 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "CLAUDE.md"
+  ],
+  "permission": {
+    "read": "allow",
+    "glob": "allow",
+    "grep": "allow",
+    "list": "allow",
+    "edit": "ask",
+    "bash": "ask",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "skill": {
+      "*": "deny",
+      "main-agent": "allow",
+      "sub-agent": "allow",
+      "evolution-agent": "allow",
+      "sub-e-agent": "allow",
+      "optics-mie-reproduction": "allow",
+      "optics-magnus-platform": "allow",
+      "optics-magnus-artifacts": "allow",
+      "skill-creator": "ask"
+    },
+    "task": {
+      "*": "deny",
+      "sepr-main": "allow",
+      "sepr-sub": "allow",
+      "sepr-evolution": "allow",
+      "sepr-sub-e": "allow"
+    },
+    "external_directory": {
+      "*": "ask",
+      "C:/Users/27370/Desktop/project/self-evo-paper-repro/**": "allow"
+    }
+  },
+  "agent": {
+    "sepr-main": {
+      "description": "SEPR paper-reproduction orchestrator. Use for starting or continuing a new paper/figure reproduction workflow.",
+      "mode": "primary",
+      "prompt": "{file:.opencode/prompts/sepr-main.md}",
+      "permission": {
+        "skill": {
+          "main-agent": "allow",
+          "sub-agent": "allow",
+          "optics-mie-reproduction": "allow",
+          "optics-magnus-platform": "allow",
+          "optics-magnus-artifacts": "allow",
+          "*": "ask"
+        },
+        "task": {
+          "*": "deny",
+          "sepr-sub": "allow"
+        }
+      }
+    },
+    "sepr-sub": {
+      "description": "SEPR paper-reproduction execution subagent for one assigned workflow step.",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/prompts/sepr-sub.md}",
+      "permission": {
+        "skill": {
+          "sub-agent": "allow",
+          "optics-mie-reproduction": "allow",
+          "optics-magnus-platform": "allow",
+          "optics-magnus-artifacts": "allow",
+          "*": "ask"
+        },
+        "task": "deny",
+        "edit": "ask",
+        "bash": "ask"
+      }
+    },
+    "sepr-evolution": {
+      "description": "SEPR self-iteration orchestrator. Use only when the user explicitly starts an evolution/self-iteration run.",
+      "mode": "primary",
+      "prompt": "{file:.opencode/prompts/sepr-evolution.md}",
+      "permission": {
+        "skill": {
+          "evolution-agent": "allow",
+          "sub-e-agent": "allow",
+          "skill-creator": "ask",
+          "*": "ask"
+        },
+        "task": {
+          "*": "deny",
+          "sepr-sub-e": "allow"
+        }
+      }
+    },
+    "sepr-sub-e": {
+      "description": "SEPR self-iteration execution subagent for one assigned evolution step.",
+      "mode": "subagent",
+      "prompt": "{file:.opencode/prompts/sepr-sub-e.md}",
+      "permission": {
+        "skill": {
+          "sub-e-agent": "allow",
+          "skill-creator": "ask",
+          "*": "ask"
+        },
+        "task": "deny",
+        "edit": "ask",
+        "bash": "ask"
+      }
+    }
+  }
+}

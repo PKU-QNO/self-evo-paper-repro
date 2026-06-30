@@ -1,8 +1,8 @@
 # SEPR 工作日志（完整交接文档）
 
-> **用途**：本文档是 SEPR 工作区从创建到 2026-06-29 的完整工作记录。供上下文压缩或新开对话时快速恢复。
-> **最后更新**：2026-06-29
-> **当前阶段**：设计阶段 + 风险审查 + 16 条落地全部完成。待启动 Mie 第一阶段。
+> **用途**：本文档是 SEPR 工作区从创建到 2026-06-30 的完整工作记录。供上下文压缩或新开对话时快速恢复。
+> **最后更新**：2026-06-30
+> **当前阶段**：设计阶段 + 风险审查 + 16 条落地 + 双系统适配（Claude Code + OpenCode）全部完成。待启动 Mie 第一阶段。
 
 ---
 
@@ -92,9 +92,17 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 - 本 session grep 验证 16 条全部命中目标文件
 - DESIGN.md §15 更新为"16 条全部落地"完整表格
 
+### 阶段八：.claude 详细版 + 双系统适配 + 三文件同步（2026-06-30）
+- **.claude/skills/ 4 身份详细版完成**：把 .human/（中文大纲）提示词工程详细化到 .claude/skills/（中文 prompt-engineered 执行版），4 身份（main/sub/evolution/sub-E）共 6465 行，42 个 Markdown 文件，quick_validate 全通过。每个 workflow 步骤有完整 spawn 指令（全局+局部拼接好）+retry_budget+blocker_condition+决策问题+gate
+- **OpenCode 适配落地**（GPT-5.5 备选方案）：Opus 不稳定，备选 GPT-5.5。判定 OpenCode 适配优于 Codex（支持层级委派+permission 统一+skill 懒加载接近 Claude Code）。调研结论：OpenCode 无硬隔离字段，规则文件从当前目录向上找 AGENTS.md/CLAUDE.md 第一个命中胜出；skill 懒加载（只暴露 name/description，agent 调 skill tool 加载正文）；子 agent 递归用 permission.task 控制。落地：SEPR/AGENTS.md（隔离上级）+ opencode.json（permission/agent 配置 108 行）+ .opencode/prompts/（4 角色 prompt，强制先加载 skill）+ scripts/start-opencode-sepr.ps1 + notes/opencode-adaptation-CN.md（166 行调研报告）
+- **三文件同步规则落地**：SEPR 三个根配置文件（CLAUDE.md/AGENTS.md/opencode.json）改任何一个必须同步审改其它两个，避免 Claude Code 和 OpenCode 行为分叉。规则写进 SEPR/CLAUDE.md + SEPR/AGENTS.md + optics_agent/AGENTS.md（OA 的 CC 改 SEPR 时遵守）
+- **hardlink 修复**：发现 optics_agent 的 AGENTS.md 和 CLAUDE.md 内容不同（编辑工具破坏 hardlink），用 Remove-Item + New-Item -ItemType HardLink 重建。教训：每次改 AGENTS.md/CLAUDE.md 后要验证 hash 一致
+- **两工作区分工架构明确**：optics_agent = 设计 SEPR 的元工作区；SEPR = agent 复现论文执行工作区；人工预训练循环：设计→SEPR 复现→经验反馈给 OA 的 CC→OA 改进设计→重跑
+- **optics_agent 系统更新**：AGENTS.md/CLAUDE.md 同步（329 行）+ 9 个 skill quick_validate 通过 + SEPR 边界明确 + Mie blocker 解除 + FINAL Mie 复现计划（7 阶段顺序+论文简介+启动指令）
+
 ---
 
-## 3. 当前状态（2026-06-29）
+## 3. 当前状态（2026-06-30）
 
 ### ✅ 已完成
 - SEPR 工作区 + claude 隔离配置
@@ -109,11 +117,15 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 - 94 篇 v3 文献审查 + REVIEW-REPORT.md
 - 16 条风险建议全部落地（P0/P1/P2）
 - 9 个 .human skill quick_validate 通过
-- .claude/skills/ 9 个（2 身份中文镜像 + 5 领域 + pdf + magnus）
+- **.claude/skills/ 4 身份详细版完成（6465 行，42 文件，quick_validate 全通过）**
 - PROJECT_STATUS.md
+- **OpenCode 适配落地**（AGENTS.md + opencode.json + .opencode/prompts/ + 启动脚本 + 调研报告）
+- **三文件同步规则**（CLAUDE.md/AGENTS.md/opencode.json 同步改）
+- **两工作区分工架构明确**（OA 设计 SEPR + SEPR 执行复现 + 人工预训练循环）
+- **optics_agent 系统更新**（AGENTS/CLAUDE 同步 + 9 skill 验证 + SEPR 边界 + FINAL Mie 计划）
 
 ### ⏳ 待完成（只剩 2 项，都等用户发话）
-1. **任务 9**：.human → .claude 英文 prompt-engineered 4 身份 skill（后期，待 .human 批注稳定）
+1. **任务 9 残留**：英文 prompt-engineered 版（现在 .claude/skills/ 是中文详细版，够用；英文版是后期优化，非必须）
 2. **Mie 第一阶段实际执行**（教材已就位，含 4 个人工 gate，不能全自动）
 
 ---
@@ -122,12 +134,35 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 
 ### SEPR 根 `C:\Users\27370\Desktop\project\self-evo-paper-repro`
 ```
-CLAUDE.md           167行  工作区路由+红线+全规范（中文/记忆/tools/失败防护/result_class/run_manifest）
+CLAUDE.md           218行  工作区路由+红线+全规范+三文件同步规则（规则主源）
+AGENTS.md            30行  OpenCode 本地规则入口（隔离上级）+ 三文件同步
+opencode.json       108行  OpenCode permission/agent 配置（4 身份+task 递归防护）
 WORKSPACE.md         53行  工作区基础说明
 PROJECT_STATUS.md    44行  项目状态总览
 todo.md              19行  全局日志（每次 workflow/Eflow 结束前填）
 WORK_LOG.md                本文档（完整工作记录）
 .gitignore
+```
+
+### .opencode/（OpenCode 适配层）
+```
+prompts/
+  sepr-main.md       SEPR main-agent OpenCode prompt（强制先加载 skill）
+  sepr-sub.md        sub-agent prompt
+  sepr-evolution.md  evolution-agent prompt
+  sepr-sub-e.md      sub-E-agent prompt
+```
+注：OpenCode skill 懒加载，prompts/ 强制各角色先调 skill tool 加载对应 SKILL.md。
+
+### scripts/
+```
+start-opencode-sepr.ps1   OpenCode 启动脚本
+```
+
+### notes/
+```
+opencode-adaptation-CN.md   166行  OpenCode 调研报告+迁移方案
+self_iteration_design-CN.md        ECC 6 改动+自迭代 5 步
 ```
 
 ### .paper/（论文原文区，只读）
@@ -166,22 +201,24 @@ skills/
   skill-creator/            skill 规范+互转脚本
 ```
 
-### .claude/（英文 prompt-engineered 执行版，待后期任务 9 补全）
+### .claude/（中文 prompt-engineered 详细执行版，4 身份 6465 行）
 ```
-settings.local.json        claude 隔离配置
+settings.local.json        claude 隔离配置（git+claudeMdExcludes+disableBundled+autoMemory=false）
 skill-print.py             sub-agent 启动时获取 skill 列表（需 PYTHONUTF8=1）
 skills/
-  main-agent/              中文镜像（待任务9改英文）
-  sub-agent/               中文镜像
-  optics-agent-core/       中文
-  optics-magnus-platform/  中文
-  optics-magnus-artifacts/ 中文
-  optics-mie-reproduction/ 中文
-  skill-creator/           中文
+  main-agent/              14 文件 2193 行（SKILL+spawn模版+4类输出模板+11步workflow各步详细化）
+  sub-agent/               12 文件 1650 行（SKILL+报告模板+10步workflow）
+  evolution-agent/         9 文件 1556 行（SKILL+E全局模版+ehistory模板+6步workflow）
+  sub-E-agent/              7 文件 1066 行（SKILL+报告模板+5步workflow，frontmatter name: sub-e-agent）
+  optics-agent-core/       中文（项目基础路由，已更新含 SEPR 边界）
+  optics-magnus-platform/  中文（Magnus 平台）
+  optics-magnus-artifacts/ 中文（artifact 格式，蓝图完整 schema）
+  optics-mie-reproduction/ 中文（Mie 3 层检验，已更新含 FINAL 计划+教材）
+  skill-creator/           中文（skill 规范+互转脚本）
   pdf/                     空白骨架（PDF 提取/OCR/数字化，待英文）
   magnus/                  空白骨架（Magnus HPC，SLURM/973G/128核，含 blueprint schema+sweep_manifest）
 ```
-注：evolution-agent 和 sub-E-agent 还只在 .human/，任务 9 时补英文版到 .claude/。
+注：4 身份（main/sub/evolution/sub-E）是中文 prompt-engineered 详细版，每步 workflow 有完整 spawn 指令（全局+局部拼接好）+retry_budget+blocker_condition+决策问题+gate。Claude Code 读 .claude/skills/ 预加载，OpenCode 通过 skill tool 懒加载同一份 SKILL.md。
 
 ### .work/（agent 工作沙箱）
 ```
@@ -366,6 +403,20 @@ main-agent step11 / evolution-agent step06 写，记：run_id / timestamp / case
 ### 5.17 conflict_ledger.yaml
 evolution step02 建，冲突触发：同现象不同结论/同参数不同值/经验与已有skill冲突。字段：conflict_id / 冲突项描述 / 来源A / 来源B / 当前采用项 / 被拒项 / 裁决人/agent / 复查条件。冲突不自动调和，进 Tier-2/3 人审。
 
+### 5.18 双系统支持（Claude Code + OpenCode）
+- **Claude Code（Opus，主）**：读 `.claude/skills/` 启动时预加载完整 SKILL.md；MCP 默认继承；嵌套用 tools 省略 Agent 控制
+- **OpenCode（GPT-5.5，备选）**：读 `.opencode/prompts/` + skill tool 懒加载同一份 SKILL.md；MCP 进 permission 系统；嵌套用 permission.task 控制
+- **同一套 SKILL.md 正文**：.claude/skills/ 的 SKILL.md 两个系统共用，不用维护两套
+- **Opus 不稳定时切 GPT-5.5 + OpenCode**，迁移成本低
+- OpenCode 适配文件：AGENTS.md（隔离上级）+ opencode.json（permission/agent）+ .opencode/prompts/（4 角色 prompt）
+
+### 5.19 三文件同步规则（强制）
+SEPR 三个根配置文件改任何一个必须同步审改其它两个：
+- `CLAUDE.md`（规则主源，Claude+OpenCode 都读）
+- `AGENTS.md`（OpenCode 本地隔离入口）
+- `opencode.json`（OpenCode permission/agent 配置）
+不同步会导致 Claude Code 和 OpenCode 行为分叉。详细规则见 CLAUDE.md "三文件同步规则"节。optics_agent/AGENTS.md 也记录此要求（OA 的 CC 改 SEPR 时遵守）。
+
 ---
 
 ## 6. 16 条风险落地（REVIEW-REPORT）
@@ -453,10 +504,17 @@ evolution step02 建，冲突触发：同现象不同结论/同参数不同值/�
 - 不 commit 除非用户要求
 - quick_validate 需 `PYTHONUTF8=1`
 - skill-print.py 需 `PYTHONUTF8=1`
+- **三文件同步规则**：改 CLAUDE.md/AGENTS.md/opencode.json 任何一个必须同步审改其它两个
+- **hardlink 维护**：optics_agent 的 AGENTS.md 和 CLAUDE.md 是 hardlink，编辑工具可能破坏，改后验证 hash 一致，破坏了用 Remove-Item + New-Item -ItemType HardLink 重建
 
 ### 待办（只剩 2 项）
-1. 任务 9：.human→.claude 英文 prompt-engineered 4 身份 skill（后期）
+1. 任务 9 残留：英文 prompt-engineered 版（.claude/skills/ 现在是中文详细版够用，英文版是后期优化）
 2. Mie 第一阶段：教材在 `.paper/scattering.pdf`，说"复现 XXX.pdf"启动 main-agent → 10步workflow → 4个人工gate
+3. **sub-E-agent 目录名兼容**：.claude/skills/sub-E-agent/ 目录大写 E 和 frontmatter name: sub-e-agent 不完全匹配，OpenCode 可能要求一致，列为后续验证项
+
+### 双系统启动方式
+- **Claude Code（Opus）**：直接 `claude` 启动，读 .claude/skills/ 预加载
+- **OpenCode（GPT-5.5 备选）**：`pwsh scripts/start-opencode-sepr.ps1`，读 .opencode/prompts/ + skill tool 懒加载同一份 SKILL.md
 
 ---
 
@@ -469,6 +527,10 @@ evolution step02 建，冲突触发：同现象不同结论/同参数不同值/�
 - **MCP 工具全量注入占 context**：必须用 tools allowlist 控制
 - **ToolSearch 必须显式包含**：否则 MCP 工具注册了无法调用
 - **E-flow 不调 W-flow**：replay 用 selective 层 A/B/C，层 C 人工重跑
+- **编辑工具破坏 hardlink**：edit/write 在 Windows 上可能替换文件而非原地改，导致 AGENTS.md 和 CLAUDE.md 内容分叉。每次改后验证 hash 一致，破坏了用 `Remove-Item CLAUDE.md; New-Item -ItemType HardLink -Path CLAUDE.md -Target AGENTS.md` 重建
+- **三文件必须同步**：改 CLAUDE.md/AGENTS.md/opencode.json 任何一个要审改其它两个，否则 Claude Code 和 OpenCode 行为分叉
+- **OpenCode skill 懒加载**：和 Claude Code 的 skills: 预加载不同，OpenCode 子 agent 要靠 .opencode/prompts/ 强制先调 skill tool 加载 SKILL.md
+- **task 工具 JSON 路径反斜杠报错**：派子 agent 时 prompt 里的 Windows 路径反斜杠会触发 JSON 解析错误，改用正斜杠或让子 agent 读临时 prompt 文件
 
 ---
 
@@ -477,21 +539,27 @@ evolution step02 建，冲突触发：同现象不同结论/同参数不同值/�
 | 文档 | 位置 | 用途 |
 |------|------|------|
 | WORK_LOG.md | SEPR 根 | 本文档（完整工作记录） |
-| CLAUDE.md | SEPR 根 | 工作区路由+红线+全规范 |
+| CLAUDE.md | SEPR 根 | 工作区路由+红线+全规范+三文件同步规则（规则主源） |
+| AGENTS.md | SEPR 根 | OpenCode 本地规则入口（隔离上级）+ 三文件同步 |
+| opencode.json | SEPR 根 | OpenCode permission/agent 配置（4 身份+task 递归防护） |
 | DESIGN.md | .human/ | 项目计划主线（14章+§15+附录） |
 | PROJECT_STATUS.md | SEPR 根 | 状态总览 |
 | todo.md | SEPR 根 | 全局日志（每次run填） |
+| opencode-adaptation-CN.md | SEPR/notes/ | OpenCode 调研报告+迁移方案（166 行） |
+| sepr-*.md | SEPR/.opencode/prompts/ | OpenCode 4 角色 prompt（强制先加载 skill） |
+| start-opencode-sepr.ps1 | SEPR/scripts/ | OpenCode 启动脚本 |
 | REVIEW-REPORT.md | optics_agent/papers/SEPR/ | 94篇v3风险报告 |
 | CATEGORY-READING-NOTES.md | 同上 | 分类阅读笔记 |
 | CONTEXT-for-subagent.md | 同上 | 子agent上下文 |
 | workflow_risk_review-CN.md | optics_agent/notes/ | R-1~R-49 风险清单 |
-| mie_reproduction_plan-CN.md | reproduction_test/mie/ | Mie 复现计划 |
+| mie_reproduction_plan-FINAL-CN.md | reproduction_test/mie/ | 最终版 Mie 复现计划（7阶段+启动指令） |
 | self_iteration_design-CN.md | SEPR/notes/ | ECC 6改动+自迭代5步 |
-| evolution_history_template.md | .human/skills/evolution-agent/references/ | .E-history 报告模板 |
-| spawn_template_global.md | main-agent/evolution-agent references/ | W/E 全局 spawn 模版 |
-| main_report_template.md | .human/skills/main-agent/references/ | 4类输出模板 |
-| report_template.md | sub-agent/sub-E-agent references/ | 8字段报告+固定头 |
-| verification.md | optics-mie-reproduction/references/ | Layer 1 物理硬约束表 |
+| evolution_history_template.md | .claude/skills/evolution-agent/references/ | .E-history 报告模板 |
+| spawn_template_global.md | .claude/skills/main-agent/ 和 evolution-agent/references/ | W/E 全局 spawn 模版 |
+| main_report_template.md | .claude/skills/main-agent/references/ | 4类输出模板 |
+| report_template.md | .claude/skills/sub-agent/ 和 sub-E-agent/references/ | 8字段报告+固定头 |
+| verification.md | .claude/skills/optics-mie-reproduction/references/ | Layer 1 物理硬约束表 |
+| optics_agent/AGENTS.md | optics_agent 根 | OA 工作区规则（= CLAUDE.md hardlink，含 SEPR 边界+三文件同步） |
 
 ---
 

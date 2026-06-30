@@ -11,6 +11,24 @@
 - 代码注释和标识符遵循项目既有约定（可英文）
 - 给用户看的文档要结构化、用户可读，不是给机器的裸数据
 
+## 三文件同步规则（强制，避免 Claude/OpenCode 不同步）
+
+SEPR 有三个根配置文件，改任何一个必须同步改其它两个，否则 Claude Code 和 OpenCode 行为分叉：
+
+| 文件 | 作用 | 谁读 |
+|------|------|------|
+| `CLAUDE.md` | 规则主源（路由+红线+全规范） | Claude Code + OpenCode（via opencode.json instructions） |
+| `AGENTS.md` | OpenCode 本地规则入口（隔离上级） | OpenCode（向上 walk 第一个命中） |
+| `opencode.json` | OpenCode permission/agent 配置 | OpenCode |
+
+**同步要求**：
+- 改 `CLAUDE.md` 的规则（红线/流程/result_class/失败防护等）→ 检查 `AGENTS.md` 是否要同步引用，检查 `opencode.json` 的 permission 是否要同步调整
+- 改 `AGENTS.md` 的隔离/路由规则 → 同步到 `CLAUDE.md`
+- 改 `opencode.json` 的 permission/agent 定义 → 在 `CLAUDE.md` 或 `AGENTS.md` 记录"为什么这么配"
+- 任何规则变更，三个文件都要审一遍，避免一个系统知道另一个不知道
+
+**同样规则适用于 optics_agent**：optics_agent 的 `AGENTS.md`（= CLAUDE.md hardlink）要记录 SEPR 三文件同步要求，避免 OA 的 CC 改 SEPR 时漏改。
+
 ## 工作区身份
 
 光学论文复现自进化 agent。交付 SKILL 蓝图（主）+ benchmark 数据（次），不交付自迭代内容本身。自迭代是手段。
