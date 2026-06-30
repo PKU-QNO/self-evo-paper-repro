@@ -1,0 +1,63 @@
+---
+name: magnus
+description: Magnus HPC execution for SEPR — blueprint submission, job monitoring, resource management on Gustation cluster. Use when the task involves running blueprints on Magnus (SLURM framework, max 973G RAM / 256G per task, large disk, 128 cores), submitting/monitoring jobs, or managing HPC resources for COMSOL/simulation work.
+---
+
+# Magnus Skill（空白，待后期英文 prompt-engineered）
+
+> 现阶段是占位骨架。详细中文设计稿在 `.human/skills/optics-magnus-platform/` 和 `optics-magnus-artifacts/`（已从 optics_agent 复制）。后期整合成英文 prompt-engineered 版。
+> 这个 skill 给 sub-agent 用，处理 Magnus 蓝图提交和作业监控（workflow step 06 run_and_monitor 走 Magnus 时）。
+
+## Magnus 集群关键参数
+
+- **框架**：SLURM
+- **最大资源**：973G RAM（单任务上限 256G）、大磁盘、128 核心
+- **访问**：SSH 到 Gustation（校园内网，不能访问公网）
+- **凭据**：secret.json（magnus_address-gu / magnus_token-gu），不读内容
+- **保守提交原则**：CPU/内存不过半，gpu_type=cpu 默认，查现有 job 复用
+
+## 职责（待填）
+
+- 蓝图提交（blueprint ≠ script，是 Magnus 执行的参数化任务模板）
+- 作业监控（查 run_id，复用 active/success job）
+- 资源管理（cpu/ram/disk/gpu 配置，不超限）
+- 日志收集、结果回传
+- 失败诊断（逐因，区分 Magnus 成功 ≠ COMSOL 成功 ≠ 物理复现成功）
+
+## 蓝图与 script 的区别（重要）
+
+- **script**：本地 Python 跑，轻量，sub-agent 直接执行
+- **blueprint**：Magnus 负责执行的参数化任务模板，不是本地 script；跑在 SLURM 上，有大资源（973G RAM、单任务 256G RAM、128 核、大磁盘）
+- 蓝图必须有完整 typed schema，字段至少包括：
+  - `parameters`：全部输入参数、类型、默认值、含义
+  - `units`：每个物理/数值参数的单位
+  - `bounds`：每个可变参数的允许范围和非法值
+  - `fixed_assumptions`：固定物理假设、材料模型、边界条件、近似条件
+  - `resource_policy`：cpu/ram/disk/gpu 的默认值和上限，默认保守提交且不过半
+  - `expected_outputs`：CSV、图、日志、checkpoint、报告等预期产物
+  - `verifier_hooks`：运行后必须调用的验证脚本/物理检查入口
+  - `stop_rules`：NaN/Inf、非物理值、资源超限、verifier fail 等停止条件
+  - `scan_parameters`：可扫参数、范围、步长、总点数估算和 replay 支持
+- evolution 迭代蓝图时检查扫描参数泛用能力
+
+## 参数扫描 manifest（强制）
+
+所有通过 Magnus blueprint 发起的参数扫描都必须写 `sweep_manifest.yaml`，用于复跑单点和复现整图。至少包含：
+- `sweep_id`、`blueprint_id`
+- 扫描参数、范围、步长、总点数
+- 每个扫描点的参数值、结果路径、`result_class`
+- 单点复跑命令/入口和整图复现入口
+- 失败点、跳过点和 retry fingerprint
+
+## 预制脚本（待填）
+
+- `scripts/submit_magnus.py` — 蓝图提交模板
+- `scripts/monitor_job.py` — 作业状态查询
+- `scripts/collect_results.py` — 结果回传
+
+## 安全红线（待填）
+
+- 不读 secret.json / license / SSH key 内容
+- 不重复提交 job（先查 run_id）
+- 不超资源（不过半）
+- 不改 active COMSOL image 除非用户明确要求

@@ -163,6 +163,8 @@
 
 ## 如需蓝图
 
+> blueprint 是 Magnus 负责执行的参数化任务模板，不是本地 script；跑在 SLURM 上，面向 973G RAM（单任务 256G）、128 核和大磁盘资源。蓝图建议必须写完整 schema，不能只写一个脚本入口。
+
 ### 蓝图目标
 <蓝图要复现什么物理问题>
 
@@ -205,6 +207,73 @@ scan_parameters:
     type: float
 ```
 
+### 蓝图完整 schema 字段
+
+```yaml
+parameters:
+  <name>:
+    type: float | int | string | file | list
+    default: <默认值>
+    description: <物理/数值含义>
+units:
+  <name>: nm | m | eV | dimensionless | <其他单位>
+bounds:
+  <name>:
+    min: <最小值>
+    max: <最大值>
+    invalid: [<非法值说明>]
+fixed_assumptions:
+  - <材料模型/边界条件/近似条件/固定几何假设>
+resource_policy:
+  cpu:
+    default: <默认核数>
+    max: <上限>
+  ram:
+    default: <默认内存>
+    max: <上限，单任务不超过 256G>
+  disk:
+    default: <默认磁盘>
+    max: <上限>
+  gpu:
+    default: cpu
+    max: 0 unless explicitly required
+expected_outputs:
+  - path: <结果路径>
+    type: csv | figure | log | checkpoint | report
+verifier_hooks:
+  - name: <验证脚本/物理检查>
+    command: <运行入口>
+stop_rules:
+  - <NaN/Inf/非物理值/资源超限/verifier fail 等停止条件>
+scan_parameters:
+  - parameter: <可扫参数>
+    range: [<min>, <max>]
+    step: <步长>
+    total_points: <点数估算>
+```
+
+### sweep_manifest.yaml（参数扫描必填）
+
+如果蓝图执行参数扫描，必须产出 `sweep_manifest.yaml`：
+
+```yaml
+sweep_id: <唯一 ID>
+blueprint_id: <Magnus blueprint id>
+parameters:
+  - name: <参数名>
+    range: [<min>, <max>]
+    step: <步长>
+total_points: <总点数>
+points:
+  - point_id: <单点 ID>
+    values: {<参数名>: <值>}
+    result_path: <该点结果路径>
+    result_class: success | partial | fallback | blocked | failed | archived
+rerun:
+  single_point: <复跑单点入口>
+  full_figure: <复现整图入口>
+```
+
 ### 泛化能力验证
 
 | 验证项 | 是否满足 | 说明 |
@@ -236,6 +305,8 @@ scan_parameters:
 - [ ] 蓝图参数是否用 Annotated 声明了类型+范围+默认值？
 - [ ] 是否支持单值和扫描列表两种模式？
 - [ ] 是否有 scan_parameters 字段？
+- [ ] 是否有 parameters / units / bounds / fixed_assumptions / resource_policy / expected_outputs / verifier_hooks / stop_rules 完整字段？
+- [ ] 参数扫描是否写了 sweep_manifest.yaml，并支持复跑单点和复现整图？
 - [ ] 蓝图能否从本篇论文的参数泛化到同物理问题的完整参数空间？
 - [ ] 如果不能扫参，为什么？（合理理由才接受）
 

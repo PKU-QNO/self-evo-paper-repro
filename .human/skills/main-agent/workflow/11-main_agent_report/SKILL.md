@@ -43,15 +43,32 @@
 7. 给下一篇的接力
 8. 长期记忆更新摘要
 
+### 写 run manifest
+
+复现 workflow 结束前，主 agent 必须在 `.work/run_manifest.yaml` 写审计索引：
+- `run_id`、`timestamp`、`case`
+- `spawned_agents`：数量、各 agent 角色、负责节点、depth
+- `fan_out`：哪个节点并发了几个子 agent
+- `max_depth_reached`
+- `result_class`：使用 CLAUDE.md 的 7 级枚举之一
+- `retry_fingerprints`：每步重跑 fingerprint、修改点、新证据/新假设、结果
+
+`run_manifest.yaml` 只做索引，证据仍引用各步报告和 artifact。
+
 ## 写完之后
 
 1. 从 `.work` 复制有用内容到 `.result/`（问用户哪些确认）
 2. 通过 gate 的 skill 草稿同步到 `.claude`（用 yaml_to_skill.py）
 3. 更新 memento 长期记忆（全局结论）
 4. 报告写到 `.work/.sub-report/main-<case>-<timestamp>.md`，也复制一份到 `.result/reports/`
+5. 写 `.work/run_manifest.yaml`，记录 fan-out/depth/result_class/retry_fingerprints；`result_class` 使用 CLAUDE.md 的 7 级枚举之一
 
 ## 人工 gate
 
 最终确认。用户看了主 agent 报告后决定哪些进 .result、哪些 skill 草稿通过。
+
+## 本步 sub-agent spawn 局部模版
+
+本步由主 agent 自己执行，不 spawn sub-agent。
 
 ## workflow 结束

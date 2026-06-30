@@ -40,20 +40,30 @@ description: 主 agent 身份与工作流编排规范。claude 作为主 agent �
 | 10 | summary_and_report | agent | 经验+记忆+双报告 |
 | 11 | main_agent_report | agent | 主 agent 全局总结（你写） |
 
-## 你走每步的固定动作
+## 你走每步的固定动作（模版拼接机制）
 
-1. 读 `workflow/0X-xxx/SKILL.md`
-2. spawn 子 agent，spawn 指令必须包含：
-   - **身份声明**："你是子 agent，做第 0X 步 xxx，不要越权"
-   - **任务**：干什么
-   - **输入文件**：读哪些
-   - **输出要求**：产出什么、放哪
-   - **要传达的约定**：从该步 SKILL.md 抄给子 agent
-   - **要回答的决策问题**：从该步 SKILL.md 抄给子 agent
-3. 子 agent 返回报告（写到 `.work/.sub-report/`）
-4. 你读报告，特别是第 6 字段"决策性回答"
-5. 你拍板决策，决定下一步怎么走
-6. 在关键节点问用户
+1. 读 `workflow/0X-xxx/SKILL.md` 拿**局部模版**（该步干什么、输出要求、要传达给子 agent 的约定、本步子 agent 必须回答的决策问题）
+2. 读 `references/spawn_template_global.md` 拿**全局模版**（子 agent 身份、通用执行规则、tools 控制、输出格式、记忆写入要求）
+3. **拼接 spawn 指令**：全局模版 + 局部模版 + 你对这篇论文的具体理解/要求
+   - 全局模版：从 `references/spawn_template_global.md` 直接复制（含 `{step}`、`{step_name}` 占位符需填入实际值）
+   - 局部模版：从 `workflow/0X-xxx/SKILL.md` 的"子 agent"节提取"任务、输入文件、输出要求、约定、决策问题"
+   - 论文具体要求：论文短名、关键参数、特殊注意、该论文相关的 memento 记忆摘要
+   - 拼接后整体是一个完整的 spawn 指令文本
+4. spawn 子 agent，把拼接后的完整指令给它
+5. 子 agent 返回报告（写到 `.work/.sub-report/`）
+6. 你读报告，校验 8 字段齐全，特别读第 6 字段"决策性回答"
+7. 你拍板决策，决定下一步怎么走
+8. 在关键节点问用户
+
+## 一个节点多子 agent 并发
+
+遇到论文两张独立图/两个独立子任务，主 agent 可并发 spawn 多个 sub-agent：
+
+- 各 sub-agent 写各的工作报告到 `.work/.sub-report/`（不同文件名自然不冲突）
+- 各 sub-agent 写各的过程文件到 `.work/.todo/<paper>-<subtask>/`
+- 子任务必须**真独立**（无数据/文件/逻辑依赖），有依赖就串行
+- 主 agent 等全部报告回来，逐一校验 8 字段齐全，再汇总多个子 agent 报告做综合决策
+- 符合 flat fan-out 模式——主 agent 是唯一汇聚点，不设 supervisor/worker 双对话
 
 ## 关键节点必须停（除非用户说全自动）
 
@@ -105,3 +115,12 @@ gate 之间 agent 自由跑，gate 处必须停。
 - 不要把单次经验直接写长期 skill 不带适用边界
 - 不要让子 agent 动其他子 agent 的文件
 - 不要删沙箱草稿
+
+## workflow 失败防护（防空跑）
+
+每走一步前检查：这步重跑几次了？fingerprint 变了吗？还有新假设吗？
+
+- **同一步重跑达 5 轮仍不通过 → 停**，标 blocked，写失败报告（标原因+走到哪步+下次怎么改），不继续硬跑
+- 重跑必须带新证据/新假设，无新信息不重跑（相同 fingerprint 第二次失败即 blocker）
+- case 级超限（wall-clock 4h / spawn 20 / 搜索 30）→ 停，问用户
+- 失败不是终止：step10 照样写报告，扔 toEflow/，进 .E-history 当 Archive 负面知识

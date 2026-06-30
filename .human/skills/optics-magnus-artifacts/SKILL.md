@@ -79,6 +79,9 @@ Rules:
 - Use `typing.Annotated` metadata for UI labels, descriptions, defaults, choices, and multiline inputs.
 - Keep long runner logic in repository files or mounted runtime folders, not in the blueprint.
 - Escape shell arguments before interpolating them into `entry_command`.
+- Blueprint 是 Magnus 负责执行的参数化任务模板，不是本地 script；跑在 SLURM 上，面向 973G RAM（单任务 256G）、128 核和大磁盘资源。
+- Blueprint schema 必须完整描述 `parameters`、`units`、`bounds`、`fixed_assumptions`、`resource_policy`（cpu/ram/disk/gpu 默认值和上限）、`expected_outputs`、`verifier_hooks`、`stop_rules`、`scan_parameters`（可扫参数/范围/步长/总点数）。
+- 参数扫描必须写 `sweep_manifest.yaml`，记录 `sweep_id`、`blueprint_id`、扫描参数/范围/步长/总点数、每个点的结果路径和 `result_class`，并支持复跑单点和复现整图。
 
 ## Public And Private Boundaries
 
@@ -147,5 +150,7 @@ Before saving or exporting a Magnus artifact:
 - Confirm whether the file is raw source (`.magnus.py` or `.magnus`) or full package (`.magnus.yaml`, `.magnus.skill.yaml`).
 - Check that public files contain no token, SSH key, registry password, or license content.
 - Keep blueprint UI text understandable to the target user; use Chinese labels for this project's COMSOL UI.
+- Confirm the blueprint schema has parameters/units/bounds/fixed_assumptions/resource_policy/expected_outputs/verifier_hooks/stop_rules/scan_parameters before handoff.
+- For parameter sweeps, confirm `sweep_manifest.yaml` exists and can drive single-point rerun and full-figure reproduction.
 - Keep platform packages copy-paste importable: valid YAML, correct `kind`, `version`, `payload`, and `exported_at`.
 - Preserve existing compatibility paths unless the user asks for a migration.

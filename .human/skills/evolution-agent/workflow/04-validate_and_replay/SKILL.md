@@ -18,6 +18,7 @@
   - 退化检查：旧成功 case 的 pass/fail 状态不变或改善
   - transfer case：新 case 上的泛化表现
   - 物理 verifier 结果（能量守恒等客观判据）
+  - 每条候选经验/改动必须带 5 字段：`candidate_id`（唯一 ID）、`evidence_ref`（引用 capsule/verifier 结果/数值）、`decision`（Save/Improve/Absorb/Fork/Archive/Drop）、`tier`（Tier-1/2/3）、`rollback_ref`（接受后出问题回滚到哪个版本）
 - 如果发现退化，标注具体是哪项退化、严重程度
 
 ## 要传达给 sub-E-agent 的约定
@@ -46,3 +47,17 @@
 - 退化检查数据（不要只看结论，看具体数字）
 - 有退化的话，用户决定：回滚 / 重改 / 接受退化
 - 无退化的话，用户决定进下一步
+
+## 局部 spawn 模版（供 evolution-agent 拼接用）
+
+```
+【第 04 步：validate_and_replay】
+【任务】用新旧 skill 在旧 replay set 上跑对比验证。防 self-bias 客观闸门——不能只靠"看起来更好"，要看量化数据。使用 selective replay 策略分三层逐步验证。
+【输入】上一步的 skill 草稿（`.work/.evolution/<timestamp>/drafts/`）；当前 active skill（`.claude/skills/`）；replay set 至少 1-2 篇已完成复现的旧 case；可选的 transfer case（和本次相关的未跑论文，测泛化）
+【输出】replay 验证报告（`.work/.evolution/<timestamp>/validation/replay_report.md`）：每个旧 case 新旧结果对比；退化检查（旧成功 case 的 pass/fail 状态不变或改善）；transfer case 泛化表现；物理 verifier 结果（能量守恒等客观判据）；每条候选经验/改动必须带 candidate_id/evidence_ref/decision/tier/rollback_ref 五字段
+【要传达的约定】replay regression 不是"跑新结果"，是对比新旧；退化分级（严重/重要/轻微）；无退化+新 case 有改善→进 human gate；有退化→回滚对应修改+标注"此项修改需重审"；verifier 脚本优先用已有的（如 energy_conservation.py），不重造轮子；selective replay 策略：A 层（核心 verifier 快速筛选）→ B 层（关键 case 详细对比）→ C 层（transfer 泛化验证），逐层递进，任一 fail 即终止
+【必须回答的决策问题】1. 新旧对比结果如何？每个旧 case 有退化吗？2. 如果有退化，是哪个 skill 修改导致的？严重程度？3. 物理 verifier 通过了吗？通过率？4. 建议：这个 skill 修改可以进 gate 吗？还是需要回滚/重改？5. replay set 够用吗？要不要补充？
+【人工 gate】④ 验证结果给用户看。确认退化检查数据（不要只看结论看具体数字）；有退化时用户决定回滚/重改/接受退化；无退化时用户决定进下一步。
+【并发说明】通常一个 sub-E-agent 顺序执行 replay（A→B→C 层），每层内的 case 可并发。不跨 skill 并发。
+【预制脚本】无（尚未建立）
+```

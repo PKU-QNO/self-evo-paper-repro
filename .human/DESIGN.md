@@ -384,14 +384,81 @@ Tier-3 ──→ active（正式写入 skill）
 
 ## 14. 待解决问题
 
-1. **四选一改进方案 A+C**：要写进 evolution-agent / sub-E-agent 的 step05 SKILL.md，尚未落地
-2. **`.claude/skills/` 英文 4 身份 agent-skill**：待后期写，当前 `.human/skills/` 是主
-3. **subsubagent 规范**：用户待细看批注（sub-agent SKILL.md 的"子子 agent 规范"节）
-4. **Mie 第一阶段**：待用户确认教材后开始（教材已在 `.paper/scattering.pdf`）
-5. **replay set**：初期小（1-2 篇），先跑通流程
-6. **evolution-agent / sub-E-agent 的 `.human/skills/`**：已建，待用户批注
-7. **`toEflow/` 和 `.E-history/` 目录**：尚未创建，根 CLAUDE.md 已约定，等实际运行时建
-8. **tier 升级脚本**：方案 C 的脚本化需要写，当前未实现
+### 已解决 / 已落地
+
+1. ✅ **四选一改进方案 A+C**：已落地到自迭代 step05，六维裁决 + 三级治理已写入执行流程
+2. ✅ **`.E-history/` 报告模板**：已建立 evolution 历史报告模板
+3. ✅ **W-flow step10/11 输出 4 类文档**：已补齐输出要求，用于复现结束、待迭代提交和交付留痕
+4. ✅ **蓝图扫描参数泛用能力**：已写进蓝图模板，不再只绑定单篇/单图参数
+5. ✅ **subsubagent 规范**：三原则已讨论落地，用户明确不再逐条批示
+6. ✅ **spawn 输入模板**：已建立全局模板 + 局部模板 + 拼接规则
+7. ✅ **多子 agent 并发**：已写入 workflow/skill 约束
+8. ✅ **CLAUDE.md 中文输出 + Markdown 要求**：已加入根规则
+9. ✅ **教材就位**：Bohren & Huffman 教材已放在 `.paper/scattering.pdf`
+10. ✅ **PyMieScatt 清理**：已弃用 PyMieScatt，改为 3 层物理检验
+
+### 仍待解决 / 后续待办
+
+1. **任务9：把 `.human/` 变成 `.claude/`**：用提示词工程把中文设计稿转成英文 4 身份 agent-skill；这是后期任务，等待 `.human/` 批注稳定后再做
+2. **Mie 第一阶段实际执行**：教材已就位，等待用户发话开始；执行中保留人工 gate，包括参数核对、公式核对、spec 核对、误差核对
+3. **replay set 初期小**：先用 1-2 篇论文跑通流程，再考虑扩展 replay regression 覆盖面
+4. **`.claude/skills/` 旧内容治理**：现阶段还留着从 optics_agent 复制来的 7 个中文 skill；后期要替换成英文 4 身份 skill，领域 skill 如何放仍待定
+5. **evolution-agent / sub-E-agent 的 `.human/skills/`**：已建，仍待用户批注
+6. **`toEflow/` 草稿/迭代需求格式验证**：具体格式已在 step10 模板定义，但需要实际跑一次 workflow 后验证是否够用
+
+---
+
+## §15 文献审查结论（94 篇）
+
+> 2026-06-29。为审查整个 v3 设计风险，查了 94 篇文献（A-K 11 类），下载在 `optics_agent/papers/SEPR/`，完整报告在 `REVIEW-REPORT.md`，分类阅读笔记在 `CATEGORY-READING-NOTES.md`。本计划已经过该轮审查，核心风险已接入本节。
+
+### 5 条最高优先级结论（来自 REVIEW-REPORT §0）
+
+1. **LLM-as-judge / self-bias 把 pipeline success / fallback / diagnostic 当 physical reproduction success**——AI 判断自己复现正确性不可靠，必须外部 verifier + human gate
+2. **自迭代在 noisy verifier 上反复"分数涨就收"产生假进步和 reward hacking**——自迭代不能分数涨就吸收，要 holdout + anytime-valid 接受规则 + 回归测试 + rollback
+3. **子 agent / subsubagent 递归、身份漂移、工具权限过宽造成空跑或越权**——subsubagent 默认叶子化，限工具/嵌套/写权限/max turns
+4. **记忆污染：失败 / surrogate / 旧参数 / prompt injection 被未来检索为成功经验**——memory 必须带 result_class / evidence_ref / scope / confidence / supersedes
+5. **参数化蓝图若无 typed schema / 单位 / 范围 / 资源上限 / replay 会变成不可审计随机实验**——蓝图扫描要 typed + 限资源 + 可 replay
+
+### v3 各块关键经验/风险（精炼）
+
+| v3 块 | 关键经验/风险 | 已落地 |
+|-------|-------------|--------|
+| 提示词工程 | always-on 指令短而稳定，流程放按需 skill；外部文本标 data 防 injection；prompt 优化只看自评分会优化成"更会过 judge" | CLAUDE.md 只放路由红线 ✅ |
+| 子 agent 系统 | 每次 spawn 声明 role/scope/input/output/forbidden/tools/evidence；叶子 agent 禁继续 spawn；fan-out 数和深度进 run manifest | spawn 模版拼接 ✅，subsubagent 第3层不 spawn ✅ |
+| 自迭代系统 | evidence-verifiable self-evolution；PACE 假进步；遗忘；Zombie Agents | 六维裁决+三级治理 ✅，执行者不总结自己 ✅ |
+| 6 分类法 | 单真值 vs 多真值；冲突 ledger；Tier 人审边界 | Fork/Archive ✅，Tier-1/2/3 ✅ |
+| workflow 结构 | schema-gated execution；plausible-but-wrong scientific workflow | 11 步固定 ✅ |
+| 正确性判断 | LLM-as-judge 风险；AI4S 科学推理不足；外部 verifier 必要 | 3 层检验 ✅，物理 verifier ✅ |
+| 防空跑 | retry fingerprint；LoopTrap；节点/case/evolution 多层预算 | 失败防护节 ✅（5 轮上限+新证据要求） |
+| 记忆/provenance | memory 是经验层，provenance 是证据层，防 pollution | provenance 五要素 ✅ |
+| 蓝图扫描 | blueprint ≠ script：blueprint 是 **Magnus 负责执行**的参数化任务模板，跑在 SLURM 框架上，最大 973G RAM（单任务 256G）、大磁盘、128 核心；扫描泛用要 typed schema + 参数单位/范围 + 资源上限（cpu/ram/disk/gpu）+ replay + fork | 蓝图模板 scan_parameters ✅，资源上限待补 |
+| 物理 verifier | verification vs validation；硬约束/极限退化/论文图量化三层 | 3 层检验 ✅ |
+
+### 待逐条对照落地
+
+REVIEW-REPORT 的 16 条建议已**全部落地**（2026-06-29，P0/P1/P2 三批）：
+
+| 批次 | 条目 | 落地内容 |
+|------|------|---------|
+| P0 | #9 result_class 7级枚举 | CLAUDE.md 强制 7 级（not_run/pipeline_completed/simulation_completed/diagnostic_only/surrogate_fallback/partial_physical_match/physical_reproduction_success），禁把 fallback/diagnostic/pipeline 当成功 |
+| P0 | #14 verifier 适用条件 | verification.md Layer 1 每条加 Applicable/Tolerance/Failure means/Not applicable，硬约束失败默认 result_class≤diagnostic_only |
+| P0 | #16 硬约束失败口径 | step07/08/10 同步硬规则 |
+| P0 | #8 自迭代6步字段 | evolution 01-05 每条候选带 candidate_id/evidence_ref/decision/tier/rollback_ref |
+| P1 | #5 conflict_ledger | step02 建冲突台账 conflict_id/来源A/B/采用项/被拒项/裁决人/复查条件，冲突不自动调和进 Tier-2/3 |
+| P1 | #6 Tier 二维治理 | Tier 改成 case count × 决策级别：Tier-1低风险/Tier-2 skill记忆人审/Tier-3 物理声明+verifier+replay |
+| P1 | #10 uncertainty+missing_evidence | sub/sub-E 报告每条判断显式写 uncertainty + missing_evidence |
+| P1 | #11 provenance 五要素统一 | 字段名统一 source_artifact/evidence_type/timestamp_version/scope_applicability/confidence_result_class |
+| P2 | #1 spawn 模版 forbidden_actions+max_turns | 全局模版加 forbidden_actions + max_turns=15 超限自停报 blocked |
+| P2 | #2 agent 固定头6字段 | sub/sub-E 报告顶部 role/task_scope/evidence_refs/confidence/blocked_by/recommended_action |
+| P2 | #3 run_manifest | CLAUDE.md + step11/06 建 run_manifest.yaml 记 run_id/fan_out/max_depth/result_class/retry_fingerprints |
+| P2 | #4 默认流转顺序 | evolution SKILL 加 Save→Improve→Absorb→Archive→Drop，单case优先Save/Improve，禁无证据直接Absorb |
+| P2 | #7 11步 retry_budget+blocker_condition | step01-10 每步局部模版加 retry_budget + 本步专属 blocker_condition |
+| P2 | #12 蓝图完整 schema | magnus skill 补全 parameters/units/bounds/fixed_assumptions/resource_policy/expected_outputs/verifier_hooks/stop_rules/scan_parameters |
+| P2 | #13 sweep_manifest | magnus skill + step03 + 模板建 sweep_manifest.yaml 记 sweep_id/blueprint_id/范围步长/每点result_class，支持复跑单点 |
+| P2 | #15 prompt 变更走候选分支 | 六维裁决加 prompt 类必须先 Save/Improve/Fork 候选，经 replay 验证才 Absorb |
+
+完整建议见 `REVIEW-REPORT.md` 各节。
 
 ---
 

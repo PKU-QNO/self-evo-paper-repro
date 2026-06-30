@@ -15,6 +15,7 @@
   - 这篇 capsule 的成功/失败/关键发现
   - 对 skill 的改进建议（如果有）
   - 经验分类建议（GUIDING/CAUTIONARY/FACT/PROCEDURE）
+  - 每条候选经验/改动必须带 5 字段：`candidate_id`（唯一 ID）、`evidence_ref`（引用 capsule/verifier 结果/数值）、`decision`（Save/Improve/Absorb/Fork/Archive/Drop）、`tier`（Tier-1/2/3）、`rollback_ref`（接受后出问题回滚到哪个版本）
 - 你汇总后的审查概况
 
 ## 要传达给 sub-E-agent 的约定
@@ -40,3 +41,17 @@
 - 审查质量够不够深（不是表面总结）
 - 分配对了吗（执行者没审自己）
 - 有没有漏掉重要的跨 capsule pattern
+
+## 局部 spawn 模版（供 evolution-agent 拼接用）
+
+```
+【第 01 步：concurrent_review】
+【任务】并行 spawn N 个 sub-E-agent，每个独立审查一篇已完成复现的 capsule。执行者不审自己（没参与某篇 capsule 的 sub-E-agent 去审它）。
+【输入】`.work/.result/` 下的已完成复现 capsule 列表（通常 3-5 篇）；每篇的 `capsule.md` 和子 agent 原始工作报告
+【输出】N 份审查报告写 8 字段到 `.work/.evolution/<timestamp>/sub-reports/`；每条候选经验/改动必须带 candidate_id/evidence_ref/decision/tier/rollback_ref 五字段
+【要传达的约定】执行者不审自己；审查要对抗式，不是确认式；审查重点是"这篇 capsule 暴露了什么 skill 缺陷"，不是重做复现；sub-E-agent 报告第 6 字段必须回答决策问题；可以 spawn 子子 agent 读 capsule 原始报告中的代码/数据
+【必须回答的决策问题】1. 这篇 capsule 的成功/失败根因是什么？2. 它暴露了哪个（些）skill 的什么问题？3. 你建议的改进是哪种类型（GUIDING/CAUTIONARY/FACT/PROCEDURE）？4. 有没有跨 capsule 的共性 pattern 值得注意？5. 这篇 capsule 的复现有 self-bias 风险吗？
+【人工 gate】① 每份审查报告给用户看。确认审查质量够不够深、分配对了没有（执行者没审自己）、有没有漏掉重要的跨 capsule pattern
+【并发说明】N 个 sub-E-agent 并行，每人审一篇 capsule（N = 已完成 capsule 数，通常 3-5）
+【预制脚本】无（尚未建立）
+```

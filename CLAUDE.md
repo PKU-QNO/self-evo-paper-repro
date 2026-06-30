@@ -15,6 +15,22 @@
 
 光学论文复现自进化 agent。交付 SKILL 蓝图（主）+ benchmark 数据（次），不交付自迭代内容本身。自迭代是手段。
 
+## result_class 状态枚举（强制）
+
+所有报告、brief、handoff、memento 记忆和自迭代 capsule 必须用以下 7 级枚举标注结果状态：
+
+| result_class | 含义 |
+|--------------|------|
+| `not_run` | 未跑 |
+| `pipeline_completed` | 流程跑完，无物理判断 |
+| `simulation_completed` | 仿真跑完，数值出结果，无物理判断 |
+| `diagnostic_only` | 只做诊断，无复现声明 |
+| `surrogate_fallback` | 用代理/简化方案，不是物理复现 |
+| `partial_physical_match` | 部分物理量匹配，未全通过 |
+| `physical_reproduction_success` | 物理复现成功（硬约束 + 极限 + 论文图量化全过 + human gate） |
+
+最高优先级风险规则：LLM/agent 不得把 `surrogate_fallback`、`diagnostic_only`、`pipeline_completed` 当成 `physical_reproduction_success`。除非 Layer 1 物理硬约束、Layer 2 已知极限/退化、Layer 3 论文图量化和 human gate 全部通过，否则禁止标 `physical_reproduction_success`。
+
 ## 进入 workflow 的判定（重要）
 
 **并非所有任务都要遵循完整 workflow。** 判定规则：
@@ -70,6 +86,24 @@
 
 中间步骤 agent 自由跑，这 4 类节点必须停。
 
+## workflow 失败定义与防空跑（重要）
+
+**workflow 怎么算失败：**
+1. 物理 verifier 连续不通过且无新假设
+2. 同一步重跑达到上限（5 轮）
+3. 子 agent 报告 blocked 且无法自行解决
+4. case 级 wall-clock / spawn 数 / 搜索数超限
+5. evolution 级 replay 大面积退化或 human gate 拒绝
+
+**防空跑硬性规则（写进 spawn 模版和各 SKILL.md）：**
+- **节点级**：同一步检查不通过**最多重跑 5 轮**。每轮必须有新证据或新假设，无新信息的重跑直接 Drop/Archive 转 blocked，不再硬跑
+- **retry fingerprint**：每次重跑记录改了什么/为什么重跑，相同 fingerprint 第二次失败即 blocker
+- **case 级**：单篇论文复现 max wall-clock 4 小时、max spawned agents 20、max external searches 30
+- **evolution 级**：单次 evolution max 处理 capsule 15、max skill 改动 8，超限分批
+- 主 agent 每走一步前检查：这步重跑几次了？fingerprint 变了吗？还有新假设吗？达 5 轮仍不通过就停
+
+**失败不是终止：** 失败时 step10 照样写报告（标失败原因 + 走到哪步 + 下次怎么改），扔 toEflow/，进 .E-history 当 Archive 负面知识。失败经验有价值。
+
 ## 目录约定
 
 ```
@@ -95,6 +129,20 @@ reproduction_test/ -> optics_agent/reproduction_test (junction)
 
 论文命名规则：`MMDD-NN-papername-vN`，如 `0629-01-akimov-mie-v1`
 
+## run manifest（强制）
+
+每次 workflow run / evolution run 结束前，必须在 `.work/` 下写一份 `run_manifest.yaml`，用于记录本轮编排的 fan-out、depth、重跑和结果分类。复现 workflow 由 main-agent 第 11 步负责写；自迭代 workflow 由 evolution-agent 第 6 步负责写。
+
+`run_manifest.yaml` 至少包含：
+- `run_id`、`timestamp`、`case`/`batch`：标识本轮复现 case 或 evolution 批次
+- `spawned_agents`：数量、每个 agent 角色、负责节点、depth
+- `fan_out`：哪个节点并发了几个子 agent
+- `max_depth_reached`：本轮达到的最大 spawn 深度
+- `result_class`：必须使用上文“result_class 状态枚举（强制）”的 7 级枚举之一，不得写 success / partial / fallback / blocked / failed / archived 等旧口径
+- `retry_fingerprints`：每步重跑记录，写明 fingerprint、修改点、新证据/新假设、结果
+
+`run_manifest.yaml` 是审计索引，不替代完整报告；完整证据仍放各 step 报告和 artifact。
+
 ## 记忆要求（每个 agent 都遵守）
 
 **每个 agent（main-agent / sub-agent / evolution-agent / sub-E-agent）开始行动前必须做：**
@@ -102,6 +150,19 @@ reproduction_test/ -> optics_agent/reproduction_test (junction)
 2. 结束前必须更新记忆（`memory_store` / `decisions_log` / `pitfalls_log`），存本次的关键事实/决策/教训
 
 子 agent 没有自动记忆注入，主 agent spawn 时在指令里强制要求这两步。
+
+所有记忆写入和报告中的 provenance 必须统一使用以下五个字段名，不混用 source、claim、evidence、scope、confidence 等别名：
+
+```yaml
+provenance:
+  source_artifact: <来源 artifact，论文+图/case/skill版本>
+  evidence_type: <数值/verifier结果/代码片段/人工确认>
+  timestamp_version: <时间戳或版本>
+  scope_applicability: <适用范围/边界>
+  confidence_result_class: <置信度 + result_class>
+```
+
+如果某条记忆暂时缺字段，必须显式写 `unknown` 或 `pending`，不能省略字段。
 
 ## 子 agent tools 控制（重要）
 
@@ -147,6 +208,8 @@ tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill
 | Mie 理论复现 | `optics-mie-reproduction` |
 | Magnus 平台操作 | `optics-magnus-platform` |
 | Magnus artifact 格式 | `optics-magnus-artifacts` |
+| PDF 处理（提取/OCR/数字化） | `pdf` |
+| Magnus HPC 执行（蓝图提交/作业监控，SLURM/973G/128核） | `magnus` |
 | 项目基础路由 | `optics-agent-core` |
 | 创建/规范 skill | `skill-creator` |
 

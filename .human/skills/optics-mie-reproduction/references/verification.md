@@ -6,16 +6,18 @@ Never judge success by eye against paper figures. Run the 3 layers easiest-first
 
 These hold for any parameters; AI cannot fake them; a human without Mie knowledge can judge them because they are common-sense physics.
 
-| # | Constraint | Check | Tolerance |
-|---|---|---|---|
-| 1.1 | Energy conservation | $C_{ext}=C_{sca}+C_{abs}$ | $10^{-10}$ relative |
-| 1.2 | Zero absorption when lossless | $\mathrm{Im}(\varepsilon)=0 \Rightarrow C_{abs}=0$ | $10^{-12}$ |
-| 1.3 | Optical theorem | $C_{ext}=\frac{4\pi}{k}\mathrm{Im}\,S(0)$ | $10^{-8}$ relative |
-| 1.4 | Rayleigh limit | $Q_{sca}\propto x^4$ as $x\to0$ | log-log slope $=4\pm0.01$ |
-| 1.5 | Large-size extinction paradox | $Q_{ext}\to2$ as $x\to\infty$ | $\|Q_{ext}-2\|<0.05$ for $x>50$ |
-| 1.6 | Spherical symmetry | scattering independent of incident polarization | exact |
+| # | Constraint | Check | Applicable conditions | Tolerance | Failure usually means | Not applicable / likely false positive |
+|---|---|---|---|---|---|---|
+| 1.1 | Energy conservation | $C_{ext}=C_{sca}+C_{abs}$ | Passive materials; same normalization and background medium for all cross sections; single-particle or finite system where all channels are counted | $10^{-10}$ relative | sign/normalization error, missing absorption term, unit mismatch, negative-loss material accidentally used | Active/gain media; intentionally non-passive material; near-zero denominators where relative error is ill-conditioned; open systems where extra channels are not included |
+| 1.2 | Zero absorption when lossless | $\mathrm{Im}(\varepsilon)=0 \Rightarrow C_{abs}=0$ | Strictly real material permittivity and permeability; no numerical/artificial loss; passive lossless sphere | $10^{-12}$ absolute | complex refractive-index conversion error, artificial damping left on, absorption formula sign error | Metals or dispersive media with finite loss; numerical solvers with intentional PML/material damping; cases where the model represents radiative loss as effective material loss |
+| 1.3 | Optical theorem | $C_{ext}=\frac{4\pi}{k}\mathrm{Im}\,S(0)$ | Far-field amplitude convention matches the verifier; homogeneous background; plane-wave incidence; forward scattering amplitude available | $10^{-8}$ relative | wrong scattering-amplitude normalization, wrong sign convention, phase convention mismatch, $k$ or background-index error | Near-field-only solvers without reliable far-field transform; non-plane-wave excitation; periodic arrays unless using the correct periodic optical theorem |
+| 1.4 | Rayleigh limit | $Q_{sca}\propto x^4$ as $x\to0$ | Homogeneous small sphere with $x=ka\ll1$; material response smooth over sampled wavelengths; no resonance in sampled small-$x$ range | log-log slope $=4\pm0.01$ | wrong Mie coefficient order, radius/wavelength unit bug, using cross section instead of efficiency, insufficient small-$x$ numerical precision | High-index/internal-resonant cases not in Rayleigh regime; core-shell or anisotropic particles unless the expected small-$x$ law is derived; samples not small enough |
+| 1.5 | Large-size extinction paradox | $Q_{ext}\to2$ as $x\to\infty$ | Large opaque or weakly absorbing sphere in homogeneous medium; enough multipole orders retained; $x>50$ default diagnostic range | $\|Q_{ext}-2\|<0.05$ for $x>50$ | multipole truncation too low, asymptotic normalization error, numerical instability at high order | Transparent weak-contrast spheres with strong oscillatory convergence; finite-aperture/geometric setups; sizes not yet asymptotic; nonspherical/periodic systems |
+| 1.6 | Spherical symmetry | scattering independent of incident polarization | Isotropic homogeneous sphere or concentric isotropic core-shell in homogeneous background; identical incidence geometry except polarization | exact or numerical roundoff | geometry anisotropy introduced, polarization-dependent code path bug, coordinate convention error | Anisotropic, chiral, nonspherical, substrate-coupled, or array cases where polarization dependence is physical |
 
 Layer 1 passing only means "no big mistake"; it does NOT certify numerical accuracy. Layers 2-3 are still required.
+
+Hard rule: if any applicable Layer 1 physical hard constraint fails, default `result_class` must not be higher than `diagnostic_only`. Do not claim `physical_reproduction_success` or `partial_physical_match`. Fix the code/model first; only after applicable Layer 1 checks pass may the workflow proceed to higher result classes.
 
 ## Layer 2 — Known Limits / Degeneracies
 

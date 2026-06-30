@@ -33,3 +33,18 @@
 ## 下一步
 
 → 03-reproduction_design
+
+## 本步 sub-agent spawn 局部模版
+
+```
+【第 02 步：paper_reading】
+【任务】读预处理后的论文，理解物理问题和理论框架，确认无疏漏。
+【输入】.work/{case}/paper_text.md / formulas.md / figures.md / tables.md
+【输出】.work/{case}/paper_understanding.md / parameter_table.md / missing_info.md
+【要传达的约定】参数必须标来源（论文第几页第几段）；单位必须核对（nm vs m）；缺失信息要明确列，不能假装有；需要时可搜索补充文献（Web of Science 优先），搜索结果标 trust score；搜索 Gustation 上别人公开的 Magnus 蓝图和 SKILL 借鉴参数/方法。
+【必须回答的决策问题】1.这篇论文的物理问题是什么？目标图算的是什么物理量？2.参数齐全吗？哪些缺？缺的能从别处补吗？3.有没有需要 GUI 模板/实验数据/作者私聊才能拿到的信息？4.这篇是纯解析能复现，还是需要数值计算（COMSOL/Magnus）？5.Gustation 上有没有别人做过的相关蓝图/SKILL 可以借鉴？
+【人工 gate】①——参数抽取后停下来，让用户核对参数和单位。
+【retry_budget】本步最多重跑 5 轮，每轮必须有新证据/新假设。
+【blocker_condition】目标图物理量无法定义；关键参数缺失且无法从正文/补充材料/可信外部来源补齐；必须人工提供 GUI 模板、实验数据或作者信息才能继续。
+【预制脚本】无
+```

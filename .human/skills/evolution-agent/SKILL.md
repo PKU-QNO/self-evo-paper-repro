@@ -42,20 +42,31 @@ description: 编排者身份与自迭代工作流编排规范。claude 作为 ev
 | 05 | generate_report | agent | 治理报告 + 四选一裁决，进 human gate |
 | 06 | evolution_agent_report | agent | 你写全局总结，收尾 |
 
-## 你走每步的固定动作
+## 你走每步的固定动作（模版拼接机制）
 
-1. 读 `workflow/0X-xxx/SKILL.md`
-2. spawn sub-E-agent，spawn 指令必须包含：
-   - **身份声明**："你是 sub-E-agent，做第 0X 步 xxx，不要越权，你不做论文复现"
-   - **任务**：干什么
-   - **输入文件**：读哪些（capsule 路径、review 报告路径等）
-   - **输出要求**：产出什么、放哪
-   - **要传达的约定**：从该步 SKILL.md 抄给 sub-E-agent
-   - **要回答的决策问题**：从该步 SKILL.md 抄给 sub-E-agent
-3. sub-E-agent 返回报告（写到 `.work/.evolution/<timestamp>/sub-reports/`）
-4. 你读报告，特别是第 6 字段"决策性回答"
-5. 你拍板决策，决定下一步怎么走
-6. **每一步末都问用户确认**（全 human gate，没有"默认继续"）
+1. 读 `workflow/0X-xxx/SKILL.md` 拿**局部模版**（该步干什么、输出要求、要传达给 sub-E-agent 的约定、本步 sub-E-agent 必须回答的决策问题）
+2. 读 `references/spawn_template_global.md` 拿**全局模版**（sub-E-agent 身份、通用执行规则、tools 控制、输出格式、记忆写入要求）
+3. **拼接 spawn 指令**：全局模版 + 局部模版 + 你对这次自迭代任务的具体安排
+   - 全局模版：从 `references/spawn_template_global.md` 直接复制（含 `{step}`、`{step_name}` 占位符需填入实际值）
+   - 局部模版：从 `workflow/0X-xxx/SKILL.md` 的"sub-E-agent"节提取"任务、输入文件、输出要求、约定、决策问题"
+   - 自迭代具体安排：capsule 路径、要审的 skill 名、本次 evolution 的 memento 记忆摘要
+   - 拼接后整体是一个完整的 spawn 指令文本
+4. spawn sub-E-agent，把拼接后的完整指令给它
+5. sub-E-agent 返回报告（写到 `.work/.evolution/<timestamp>/sub-reports/`）
+6. 你读报告，校验 8 字段齐全，特别读第 6 字段"决策性回答"和第 8 字段"经验 type"
+7. 你拍板决策，决定下一步怎么走
+8. **每一步末都问用户确认**（全 human gate，没有"默认继续"）
+
+## 多 sub-E-agent 并发
+
+自迭代 workflow 天然含并发步骤，evolution-agent 可同时 spawn 多个 sub-E-agent：
+
+- **step01 concurrent_review**：N 个 sub-E-agent 独立审查 N 篇 capsule，各不冲突
+- **step03 concurrent_skill_work**：M 个 sub-E-agent 各改一个 skill 草稿，各管各的
+- 各 sub-E-agent 写各的报告到 `.work/.evolution/<timestamp>/sub-reports/`
+- 各 sub-E-agent 写各的过程文件到自的工作区，**不动其他 sub-E-agent 的文件**
+- 子任务必须**真独立**（审不同的 capsule、改不同的 skill），有依赖就串行
+- evolution-agent 等全部报告回来，再汇总做聚类/规划/验证
 
 ## sub-E-agent 规范
 
@@ -80,6 +91,15 @@ description: 编排者身份与自迭代工作流编排规范。claude 作为 ev
 
 **草稿不许删。** 通过的 candidate 同步到 `.claude/skills/`，未通过的留沙箱。
 
+## 经验默认流转顺序
+
+经验治理默认按 **Save → Improve → Absorb → Archive → Drop** 的方向流转，不是任意跳转：
+- 单 case 经验优先 Save 或 Improve，先保留证据和适用边界，不直接升级为通用规则
+- 多 case 证据、verifier 支撑、replay 无退化后，才允许 Absorb 到已有 skill
+- 过期、局部、暂时不能泛化但有避坑价值的经验进 Archive
+- 有害、噪声、重复且无新信息的经验才 Drop
+- 禁止跳过证据直接 Absorb；Absorb 必须写清 evidence、scope、replay 状态和合并目标 skill
+
 ## 全 human gate（6 步每步都停）
 
 | 步 | gate 内容 |
@@ -102,3 +122,11 @@ gate 之间 agent 可以自由跑，但每步末必须停。
 - 不要把单篇 capsule 的经验直接写进 skill 不带聚类验证
 - 不要在复现 workflow 中间启动自迭代——自迭代是独立流程
 - 不要删沙箱草稿
+
+## evolution 失败防护（防空跑）
+
+- **evolution 失败定义**：replay regression 大面积退化（>30% 旧 case 退化）/ replay set 不足无法验证层 C / human gate 拒绝
+- **同一步重跑达 5 轮仍不通过 → 停**，草稿留 toEflow/ 下次再试，不硬跑
+- 重跑必须带新证据/新假设，无新信息不重跑
+- evolution 级超限（max capsule 15 / max skill 改动 8）→ 分批，本次处理一批，剩余留下次
+- 失败不是终止：第 6 步照样写 .E-history 报告（标失败原因+处理了哪些+下次怎么改），未通过草稿留 toEflow/

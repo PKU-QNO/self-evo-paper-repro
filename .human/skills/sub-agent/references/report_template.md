@@ -5,6 +5,16 @@
 
 ## 报告正文（Markdown，人看）
 
+### 固定头（6字段，必须放在正文最前）
+- role：W-sub
+- task_scope：`<做哪一步、什么任务>`
+- evidence_refs：`<引用了哪些 artifact/数据/报告路径>`
+- confidence：低 / 中 / 高
+- blocked_by：`<被什么卡住；无则写 none>`
+- recommended_action：`<建议主 agent 下一步做什么>`
+
+> 固定头是下面 8 字段报告的精简前置，内容可与第 1/3/4/6/7 字段重复，但不能省略。
+
 ### 1. 身份声明
 - 我是：子 agent（被 `<父agent>` spawn）
 - 做哪一步：`0X-xxx`
@@ -28,6 +38,12 @@
 
 ### 6. 决策性回答 ★关键
 （回答主 agent 在 workflow SKILL.md 里列出的"本步必须回答的决策问题"。子 agent 给建议，主 agent 拍板。）
+
+每个决策性回答必须显式写：
+- `uncertainty`：本次判断的不确定度（低/中/高 + 理由）
+- `missing_evidence`：还缺什么证据才能更确定（列出要补的文件、数值、verifier、人工确认等）
+
+不能只写"基本一致"、"看起来对"、"应该可行"；必须说明不确定度和缺证据。
 
 示例（step 04 理论实现）：
 - 需不需要数值计算脚本？`<需要/不需要，理由>`
@@ -66,6 +82,15 @@ decisions:
   - question: <主agent列出的决策问题>
     recommendation: <子agent建议>
     confidence: low | medium | high
+    uncertainty: <低/中/高 + 理由>
+    missing_evidence:
+      - <还缺什么证据才能更确定>
+    provenance:
+      source_artifact: <来源 artifact，论文+图/case/skill版本>
+      evidence_type: <数值/verifier结果/代码片段/人工确认>
+      timestamp_version: <时间戳或版本>
+      scope_applicability: <适用范围/边界>
+      confidence_result_class: <置信度 + result_class>
 handoff:
   next_step: 0X-xxx
   next_needs:
@@ -73,5 +98,11 @@ handoff:
 memory_update:
   memento_id: <如有>
   summary: <一句话>
+  provenance:
+    source_artifact: <来源 artifact，论文+图/case/skill版本>
+    evidence_type: <数值/verifier结果/代码片段/人工确认>
+    timestamp_version: <时间戳或版本>
+    scope_applicability: <适用范围/边界>
+    confidence_result_class: <置信度 + result_class>
 ---
 ```

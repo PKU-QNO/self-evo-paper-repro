@@ -39,3 +39,18 @@
 ## 下一步
 
 → 04-theory_and_implementation
+
+## 本步 sub-agent spawn 局部模版
+
+```
+【第 03 步：reproduction_design】
+【任务】设计复现目标，拆分成可执行的子任务。论文 prose → 结构化物理 spec，代码消费 spec 而非 prose。
+【输入】.work/{case}/paper_understanding.md / parameter_table.md / missing_info.md
+【输出】.work/{case}/formalization.yaml / repro_plan.md
+【要传达的约定】spec 字段必须齐全，缺失的写 missing_fields 不能空着；observables 要对应论文图的实际物理量；solver 要明确是解析/半解析/数值。
+【必须回答的决策问题】1.复现目标是整篇还是单图？建议从哪张图开始？2.拆成几个子任务？依赖关系是什么？3.每个子任务的检验标准是什么？4.需不需要数值计算脚本？还是纯解析够？5.需不需要 magnus 云计算？还是本地跑得动？
+【人工 gate】②——物理 formalization 后停下来，让用户核对 spec 是否匹配论文物理问题。
+【retry_budget】本步最多重跑 5 轮，每轮必须有新证据/新假设。
+【blocker_condition】observables/solver/geometry/materials 任一核心字段无法闭合；检验标准无法量化；用户未确认 formalization 且存在物理目标歧义。
+【预制脚本】无
+```
