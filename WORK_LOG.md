@@ -417,6 +417,21 @@ SEPR 三个根配置文件改任何一个必须同步审改其它两个：
 - `opencode.json`（OpenCode permission/agent 配置）
 不同步会导致 Claude Code 和 OpenCode 行为分叉。详细规则见 CLAUDE.md "三文件同步规则"节。optics_agent/AGENTS.md 也记录此要求（OA 的 CC 改 SEPR 时遵守）。
 
+### 5.20 子 agent 深度 + 工具限制配置（2026-06-30）
+Claude Code 侧新增/确认 `.claude/agents/` 四个项目级 subagent 定义：`main-agent.md`、`sub-agent.md`、`evolution-agent.md`、`sub-E-agent.md`。四个文件均使用官方 YAML frontmatter，字段含 `name`、`description`、`tools`、`disallowedTools`、`model`、`permissionMode`、`maxTurns`。
+
+Claude Code 配置口径：
+- `main-agent` / `evolution-agent`：`tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill, Agent`，`maxTurns: 50`，可分别派 `sub-agent` / `sub-e-agent`。
+- `sub-agent` / `sub-e-agent`：同样保留 `Agent`，`maxTurns: 15`，但只准派第 3 层叶子 subsubagent；派叶子时必须在 prompt 中省略 `Agent` 并写明不得继续委派。
+- 四个 Claude Code agent 均设 `disallowedTools: mcp__*, NotebookEdit`，默认不暴露 MCP 和 notebook 编辑。
+
+OpenCode 配置口径：
+- `sepr-main` / `sepr-evolution`：`maxTurns: 50`，`permission.task` 只允许对应执行者和 leaf 白名单，`edit/bash: ask`。
+- `sepr-sub` / `sepr-sub-e`：`maxTurns: 15`，只允许分别派 `sepr-sub-leaf` / `sepr-sub-e-leaf`，禁止派其它 task，`edit/bash: ask`。
+- `sepr-sub-leaf` / `sepr-sub-e-leaf`：`maxTurns: 15`，`permission.task: deny`，作为第 3 层叶子不得继续 spawn。
+
+对齐结论：两系统都只允许 `main/evolution -> sub/sub-E -> leaf` 三层。Claude Code 用 `tools`/`disallowedTools`/`maxTurns` 控制；OpenCode 用 `permission.task`、`permission.skill`、`edit/bash` 和 `maxTurns` 控制。改任一侧时必须同步审查另一侧。
+
 ---
 
 ## 6. 16 条风险落地（REVIEW-REPORT）

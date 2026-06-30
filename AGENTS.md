@@ -22,7 +22,9 @@ OpenCode sessions.
 
 - Use OpenCode `permission.task` to control which subagents can be launched.
 - Use `permission.skill` to control which skills can be loaded.
-- Deny `task` inside execution subagents unless the parent explicitly needs third-layer subsubagents.
+- Match Claude Code `.claude/agents/*.md`: SEPR allows only three levels, `main/evolution -> sub/sub-E -> leaf`; leaf agents must have `task` denied.
+- Allow `sepr-sub` to launch only `sepr-sub-leaf`, and allow `sepr-sub-e` to launch only `sepr-sub-e-leaf`; deny every other task from execution subagents.
+- Keep execution and leaf agents approval-gated for writes and commands with `edit: ask` and `bash: ask`.
 - Deny edits outside this worktree unless a task explicitly requests an external path.
 
 ## 三文件同步规则（强制）

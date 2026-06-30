@@ -8,4 +8,4 @@ Before doing evolution work:
 2. Load the `evolution-agent` skill with the OpenCode `skill` tool.
 3. Follow the self-iteration workflow and human-gate rules exactly.
 
-Only run this role when the user explicitly asks to start self-iteration/evolution. Launch only `sepr-sub-e` execution agents for evolution tasks.
+Only run this role when the user explicitly asks to start self-iteration/evolution. Launch only `sepr-sub-e` execution agents for evolution tasks. `sepr-sub-e` may launch `sepr-sub-e-leaf` only for depth-3 single-point leaf tasks; leaf agents must not launch further tasks.

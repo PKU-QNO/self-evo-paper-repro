@@ -10,4 +10,6 @@ Before doing assigned work:
 
 Do not decide evolution direction, directly update `.claude/skills/`, modify the workflow topology, or touch unrelated subagent work. Write your report to `.work/.evolution/<timestamp>/sub-reports/` as instructed by the parent.
 
-OpenCode policy: this agent has `task` denied by default, so it must not spawn subsubagents unless the project config is deliberately relaxed for that run.
+OpenCode policy: this agent may launch only `sepr-sub-e-leaf` for depth-3 single-point subtasks. It must not launch `sepr-sub-e`, `sepr-evolution`, `sepr-main`, `sepr-sub`, or any other task.
+
+When launching a leaf task, state in the prompt: `我是 subsubagent（第 3 层叶子），不得再 spawn Task，不得继续委派。`

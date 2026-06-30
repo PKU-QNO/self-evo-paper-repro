@@ -29,6 +29,17 @@ SEPR 有三个根配置文件，改任何一个必须同步改其它两个，否
 
 **同样规则适用于 optics_agent**：optics_agent 的 `AGENTS.md`（= CLAUDE.md hardlink）要记录 SEPR 三文件同步要求，避免 OA 的 CC 改 SEPR 时漏改。
 
+## 子 Agent 深度与工具限制（Claude Code / OpenCode 对齐）
+
+SEPR 明确只允许三层委派：`main/evolution -> sub/sub-E -> leaf subsubagent`。第 3 层叶子不得继续 spawn。
+
+| 系统 | 配置位置 | 编排者 | 执行者 | 叶子层 | 默认工具/权限 |
+|------|----------|--------|--------|--------|----------------|
+| Claude Code | `.claude/agents/*.md` | `main-agent` / `evolution-agent`，`tools` 含 `Agent`，`maxTurns: 50` | `sub-agent` / `sub-e-agent`，`tools` 含 `Agent`，只准派叶子，`maxTurns: 15` | 由执行者 spawn 时在 prompt 中强制省略 `Agent` | `Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill`；编排/执行层另含 `Agent`；`disallowedTools: mcp__*, NotebookEdit` |
+| OpenCode | `opencode.json` + `.opencode/prompts/*.md` | `sepr-main` / `sepr-evolution` 只准派对应执行者，`maxTurns: 50` | `sepr-sub` / `sepr-sub-e` 只准派对应 leaf，`maxTurns: 15` | `sepr-sub-leaf` / `sepr-sub-e-leaf`，`permission.task: deny`，`maxTurns: 15` | `read/glob/grep/list: allow`，`edit/bash: ask`，`skill` 按身份放行，`task` 按深度白名单放行 |
+
+对齐原则：Claude Code 用 `tools`/`disallowedTools`/`maxTurns` frontmatter 控制工具和轮数；OpenCode 用 `permission.task` 控制可派 agent，用 `edit/bash` 保持审批，用 `maxTurns` 做等价软限制。改任一侧配置时必须同步审查另一侧，避免一个系统能继续递归而另一个不能。
+
 ## 工作区身份
 
 光学论文复现自进化 agent。交付 SKILL 蓝图（主）+ benchmark 数据（次），不交付自迭代内容本身。自迭代是手段。
