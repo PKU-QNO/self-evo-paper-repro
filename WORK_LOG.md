@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 SEPR 工作区从创建到 2026-06-30 的完整工作记录。供上下文压缩或新开对话时快速恢复。
 > **最后更新**：2026-06-30
-> **当前阶段**：设计阶段 + 风险审查 + 16 条落地 + 双系统适配（Claude Code + OpenCode）全部完成。待启动 Mie 第一阶段。
+> **当前阶段**：设计阶段 + 风险审查 + 16 条落地 + 双系统适配（Claude Code + OpenCode）+ 子 agent 深度/工具限制全部完成。待启动 Mie 第一阶段。
 
 ---
 
@@ -100,6 +100,12 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 - **两工作区分工架构明确**：optics_agent = 设计 SEPR 的元工作区；SEPR = agent 复现论文执行工作区；人工预训练循环：设计→SEPR 复现→经验反馈给 OA 的 CC→OA 改进设计→重跑
 - **optics_agent 系统更新**：AGENTS.md/CLAUDE.md 同步（329 行）+ 9 个 skill quick_validate 通过 + SEPR 边界明确 + Mie blocker 解除 + FINAL Mie 复现计划（7 阶段顺序+论文简介+启动指令）
 
+### 阶段九：子 agent 深度+工具限制配置（2026-06-30）
+- **Claude Code `.claude/agents/` 4 文件落地**：`main-agent.md` / `evolution-agent.md` 的 `tools` 含 `Agent`、`maxTurns=50`，`sub-agent.md` / `sub-E-agent.md`（frontmatter `name: sub-e-agent`）的 `tools` 含 `Agent`、`maxTurns=15`，四者均设 `disallowedTools: mcp__*, NotebookEdit`；第 3 层叶子由 sub/sub-E spawn 时省略 `Agent`，不再继续 spawn。
+- **OpenCode `opencode.json` 细化为 6 agent**：`sepr-main` / `sepr-evolution` 为编排层 `maxTurns=50`，只放行对应执行层和 leaf；`sepr-sub` / `sepr-sub-e` 为执行层 `maxTurns=15`，只放行对应 leaf；新增 `sepr-sub-leaf` / `sepr-sub-e-leaf` 两个叶子角色，`maxTurns=15` 且 `permission.task: deny`。
+- **两系统对齐表**：编排层可 spawn，执行层只 spawn 叶子，叶子层禁止 spawn；工具 allowlist 统一为 `Read/Write/Edit/Bash/Glob/Grep/ToolSearch/Skill/Agent`（OpenCode 对应 read/glob/grep/list/edit/bash/skill/task），`edit/bash` 默认 `ask`。
+- **文档同步完成**：`CLAUDE.md` 新增“子 Agent 深度与工具限制”节，`AGENTS.md` 更新 Tool/Spawn Policy，`.opencode/prompts/` 6 个 prompt 明确 leaf 机制与“不再委派”。
+
 ---
 
 ## 3. 当前状态（2026-06-30）
@@ -123,6 +129,7 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 - **三文件同步规则**（CLAUDE.md/AGENTS.md/opencode.json 同步改）
 - **两工作区分工架构明确**（OA 设计 SEPR + SEPR 执行复现 + 人工预训练循环）
 - **optics_agent 系统更新**（AGENTS/CLAUDE 同步 + 9 skill 验证 + SEPR 边界 + FINAL Mie 计划）
+- **子 agent 深度+工具限制配置**（Claude `.claude/agents/` + OpenCode `opencode.json` 对齐，leaf 机制防递归）
 
 ### ⏳ 待完成（只剩 2 项，都等用户发话）
 1. **任务 9 残留**：英文 prompt-engineered 版（现在 .claude/skills/ 是中文详细版，够用；英文版是后期优化，非必须）
@@ -134,12 +141,12 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 
 ### SEPR 根 `C:\Users\27370\Desktop\project\self-evo-paper-repro`
 ```
-CLAUDE.md           218行  工作区路由+红线+全规范+三文件同步规则（规则主源）
-AGENTS.md            30行  OpenCode 本地规则入口（隔离上级）+ 三文件同步
-opencode.json       108行  OpenCode permission/agent 配置（4 身份+task 递归防护）
-WORKSPACE.md         53行  工作区基础说明
-PROJECT_STATUS.md    44行  项目状态总览
-todo.md              19行  全局日志（每次 workflow/Eflow 结束前填）
+CLAUDE.md           247行  工作区路由+红线+全规范+三文件同步规则+子 Agent 深度/工具限制（规则主源）
+AGENTS.md            32行  OpenCode 本地规则入口（隔离上级）+ 三文件同步+Tool/Spawn Policy
+opencode.json       182行  OpenCode permission/agent 配置（6 agent+leaf 防递归）
+WORKSPACE.md         73行  工作区基础说明
+PROJECT_STATUS.md    91行  项目状态总览
+todo.md              22行  全局日志（每次 workflow/Eflow 结束前填）
 WORK_LOG.md                本文档（完整工作记录）
 .gitignore
 ```
@@ -151,8 +158,10 @@ prompts/
   sepr-sub.md        sub-agent prompt
   sepr-evolution.md  evolution-agent prompt
   sepr-sub-e.md      sub-E-agent prompt
+  sepr-sub-leaf.md   W 第 3 层叶子 prompt（task deny，不再委派）
+  sepr-sub-e-leaf.md E 第 3 层叶子 prompt（task deny，不再委派）
 ```
-注：OpenCode skill 懒加载，prompts/ 强制各角色先调 skill tool 加载对应 SKILL.md。
+注：OpenCode skill 懒加载，prompts/ 强制各角色先调 skill tool 加载对应 SKILL.md；leaf prompt 明确禁止继续 spawn。
 
 ### scripts/
 ```
@@ -205,6 +214,11 @@ skills/
 ```
 settings.local.json        claude 隔离配置（git+claudeMdExcludes+disableBundled+autoMemory=false）
 skill-print.py             sub-agent 启动时获取 skill 列表（需 PYTHONUTF8=1）
+agents/                    4 个项目级 subagent 定义（tools/disallowedTools/maxTurns）
+  main-agent.md            maxTurns=50，tools 含 Agent
+  sub-agent.md             maxTurns=15，tools 含 Agent（只派叶子）
+  evolution-agent.md       maxTurns=50，tools 含 Agent
+  sub-E-agent.md           maxTurns=15，name: sub-e-agent，tools 含 Agent（只派叶子）
 skills/
   main-agent/              14 文件 2193 行（SKILL+spawn模版+4类输出模板+11步workflow各步详细化）
   sub-agent/               12 文件 1650 行（SKILL+报告模板+10步workflow）
@@ -432,6 +446,17 @@ OpenCode 配置口径：
 
 对齐结论：两系统都只允许 `main/evolution -> sub/sub-E -> leaf` 三层。Claude Code 用 `tools`/`disallowedTools`/`maxTurns` 控制；OpenCode 用 `permission.task`、`permission.skill`、`edit/bash` 和 `maxTurns` 控制。改任一侧时必须同步审查另一侧。
 
+| 层级 | Claude Code | OpenCode | maxTurns | spawn 规则 |
+|------|-------------|----------|----------|------------|
+| 复现编排 | `main-agent.md` | `sepr-main` | 50 | 可派 `sub-agent` / `sepr-sub`，可直接派 leaf 小任务 |
+| 复现执行 | `sub-agent.md` | `sepr-sub` | 15 | 只可派第 3 层 leaf |
+| 复现叶子 | spawn 时省略 `Agent` | `sepr-sub-leaf` | 15 | 不再 spawn，OpenCode `task: deny` |
+| 自迭代编排 | `evolution-agent.md` | `sepr-evolution` | 50 | 可派 `sub-e-agent` / `sepr-sub-e`，可直接派 leaf 小任务 |
+| 自迭代执行 | `sub-E-agent.md` (`name: sub-e-agent`) | `sepr-sub-e` | 15 | 只可派第 3 层 leaf |
+| 自迭代叶子 | spawn 时省略 `Agent` | `sepr-sub-e-leaf` | 15 | 不再 spawn，OpenCode `task: deny` |
+
+工具对齐：Claude Code allowlist 为 `Read/Write/Edit/Bash/Glob/Grep/ToolSearch/Skill/Agent`，并用 `disallowedTools: mcp__*, NotebookEdit` 禁 MCP/Notebook；OpenCode 用 permission 映射同等口径，`edit/bash` 均为 `ask`，leaf 仅保留读/查/skill/受控 edit/bash，不开放 task。
+
 ---
 
 ## 6. 16 条风险落地（REVIEW-REPORT）
@@ -520,6 +545,7 @@ OpenCode 配置口径：
 - quick_validate 需 `PYTHONUTF8=1`
 - skill-print.py 需 `PYTHONUTF8=1`
 - **三文件同步规则**：改 CLAUDE.md/AGENTS.md/opencode.json 任何一个必须同步审改其它两个
+- **子 agent 深度限制**：编排层 `maxTurns=50`，执行层 `maxTurns=15`，叶子层 `task deny`/省略 `Agent`；改 `.claude/agents/` 或 `opencode.json` 要对齐另一系统
 - **hardlink 维护**：optics_agent 的 AGENTS.md 和 CLAUDE.md 是 hardlink，编辑工具可能破坏，改后验证 hash 一致，破坏了用 Remove-Item + New-Item -ItemType HardLink 重建
 
 ### 待办（只剩 2 项）
@@ -546,6 +572,7 @@ OpenCode 配置口径：
 - **三文件必须同步**：改 CLAUDE.md/AGENTS.md/opencode.json 任何一个要审改其它两个，否则 Claude Code 和 OpenCode 行为分叉
 - **OpenCode skill 懒加载**：和 Claude Code 的 skills: 预加载不同，OpenCode 子 agent 要靠 .opencode/prompts/ 强制先调 skill tool 加载 SKILL.md
 - **task 工具 JSON 路径反斜杠报错**：派子 agent 时 prompt 里的 Windows 路径反斜杠会触发 JSON 解析错误，改用正斜杠或让子 agent 读临时 prompt 文件
+- **PowerShell grep 对 UTF-8 中文匹配不稳定**：验证 JSON 配置和中文字段时，用 `python json.load` / Python UTF-8 读取比 PowerShell grep 更可靠
 
 ---
 
@@ -556,12 +583,14 @@ OpenCode 配置口径：
 | WORK_LOG.md | SEPR 根 | 本文档（完整工作记录） |
 | CLAUDE.md | SEPR 根 | 工作区路由+红线+全规范+三文件同步规则（规则主源） |
 | AGENTS.md | SEPR 根 | OpenCode 本地规则入口（隔离上级）+ 三文件同步 |
-| opencode.json | SEPR 根 | OpenCode permission/agent 配置（4 身份+task 递归防护） |
+| opencode.json | SEPR 根 | OpenCode permission/agent 配置（6 agent+leaf 防递归） |
 | DESIGN.md | .human/ | 项目计划主线（14章+§15+附录） |
 | PROJECT_STATUS.md | SEPR 根 | 状态总览 |
 | todo.md | SEPR 根 | 全局日志（每次run填） |
 | opencode-adaptation-CN.md | SEPR/notes/ | OpenCode 调研报告+迁移方案（166 行） |
-| sepr-*.md | SEPR/.opencode/prompts/ | OpenCode 4 角色 prompt（强制先加载 skill） |
+| .claude/agents/*.md | SEPR/.claude/agents/ | Claude Code 4 身份 subagent 定义（tools/maxTurns） |
+| sepr-*.md | SEPR/.opencode/prompts/ | OpenCode 6 角色 prompt（强制先加载 skill，含 leaf） |
+| sepr-sub-leaf.md / sepr-sub-e-leaf.md | SEPR/.opencode/prompts/ | OpenCode 叶子角色 prompt（task deny，不再委派） |
 | start-opencode-sepr.ps1 | SEPR/scripts/ | OpenCode 启动脚本 |
 | REVIEW-REPORT.md | optics_agent/papers/SEPR/ | 94篇v3风险报告 |
 | CATEGORY-READING-NOTES.md | 同上 | 分类阅读笔记 |
