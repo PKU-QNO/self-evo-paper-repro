@@ -17,6 +17,12 @@ SEPR 现只面向 Claude Code 一套执行系统。OpenCode（GPT-5.5 备选）�
 
 Opus 不稳定时的应急方案：改 Claude Code 的 URL/API 指向 DeepSeek（非 OpenAI-specific 的 response 接口可顶），而不是维护第二套 agent 配置。
 
+## v3-final 设计归档（在 optics_agent 侧）
+
+SEPR 的设计 / 风险审计 / 演进文档（V1→V2→V3）的 **canonical 版本**汇总在元工作区 `optics_agent/v3-final/`（本工作区通过 junction 到不了，需去 optics_agent 侧看），索引 `optics_agent/v3-final/README.md`。原散落在 `optics_agent/papers/SEPR/` 等处的文件已改名带 `_moved` 后缀并冻结（顶部有面包屑）。
+
+**文件名后缀约定（两工作区通用）**：`_latest`=正在更新的最新版 / `_archive`=废案或完结但有价值 / `_deprecated`=无价值易误导（当前无）/ `_moved`=别处有 canonical、此处不更新 / `_V1_finished`=历史完结（预留）。本工作区的 `WORK_LOG.md` 是 living 日志，不移动。
+
 ## 子 Agent 深度与工具限制（Claude Code）
 
 SEPR 明确只允许三层委派：`main/evolution -> sub/sub-E -> leaf`。第 3 层叶子不得继续 spawn。全部由 `.claude/agents/*.md` 定义：
