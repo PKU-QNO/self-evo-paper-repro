@@ -11,7 +11,7 @@
   - 曲线 RMSE、共振峰位误差（nm）、Q 值相对误差
   - 差异归因（参数/模型/数值精度/论文图数字化误差）
   - 物理结论（如三区过渡、多极出现顺序）
-- 对比图（`.work/<case>/figs/comparison_*.png`）：我们的+论文+PyMieScatt 三方叠加
+- 对比图（`.work/<case>/figs/comparison_*.png`）：独立实现 + 物理硬约束 + 教材公式 + 论文图量化的交叉验证结果
 
 ## 要传达给子 agent 的约定
 

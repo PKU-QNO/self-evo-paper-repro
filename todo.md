@@ -12,7 +12,7 @@
 - 类型: workflow / Eflow
 - 论文/批次: <名字>
 - 摘要: <一句话>
-- 复现结果: 物理复现成功 / partial / fallback / 失败 / N/A(Eflow)
+- result_class: not_run / pipeline_completed / simulation_completed / diagnostic_only / surrogate_fallback / partial_physical_match / physical_reproduction_success（Eflow 无物理复现结果时写 not_run 或 N/A）
 - 自迭代产出: 提交 X 个 skill 草稿到 toEflow/（或: 本次无）
 - 待迭代需求: <需求或无>
 ```

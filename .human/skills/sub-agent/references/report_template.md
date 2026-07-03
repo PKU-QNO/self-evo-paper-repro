@@ -68,7 +68,8 @@ report_meta:
   task: <一句话>
   spawned_by: <父agent>
   timestamp: <ISO>
-  status: completed | blocked | failed
+  execution_status: completed | blocked | failed
+  # execution_status 是任务执行状态，不是 result_class。
 artifacts:
   - path: <.work 下路径>
     type: code | data | figure | note | report

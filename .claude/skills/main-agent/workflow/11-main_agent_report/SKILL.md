@@ -120,25 +120,6 @@
 - 输出 schema 缺字段，尤其缺 evidence_refs、uncertainty、missing_evidence、result_class。
 - 超出 case/evolution 预算或工具权限不足。
 
-### 拼接好的完整 spawn 指令
-
-```text
-你是 sub-agent（W-sub，复现执行者），不是编排者。你被 spawn 做第 11 步 `main_agent_report`。
-
-paper=`{paper}`
-case=`{case}`
-timestamp=`{timestamp}`
-task_scope=`执行 11-main_agent_report，只完成本步，不替父 agent 决定 workflow 走向。`
-input_paths=`{input_paths}`
-output_paths=`{output_paths}`
-
-先做：运行 `python .claude/skill-print.py`；搜索 memento；读取你自己的身份 skill；读取本步 workflow skill。
-执行：按本文件“详细任务/输入路径/输出路径/决策问题/gate/retry_budget/blocker_condition”逐条完成。
-禁止：写 .result；直接改正式 skill；跳过 verifier；把 fallback/diagnostic/pipeline 当成功；删除沙箱草稿；越权读 secret。
-报告：写到 `.work/.sub-report/11-main_agent_report-{timestamp}.md`，包含固定头 6 字段、8 字段主体、uncertainty、missing_evidence、result_class、retry_fingerprint、provenance 五字段。
-结束：先 memory_dedup_check，再按需 memory_store/decisions_log/pitfalls_log。
-```
-
 ## result_class 判定硬规则
 
 - 必须只使用 `not_run`、`pipeline_completed`、`simulation_completed`、`diagnostic_only`、`surrogate_fallback`、`partial_physical_match`、`physical_reproduction_success` 七级枚举。

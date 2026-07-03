@@ -16,6 +16,7 @@ OpenCode sessions.
 - Prefer `OPENCODE_DISABLE_CLAUDE_CODE_PROMPT=1` when launching OpenCode in this workspace.
 - Do not disable Claude-compatible skills unless intentionally testing pure `.opencode/skills`; SEPR reuses `.claude/skills/*/SKILL.md`.
 - OpenCode skills are loaded lazily by the `skill` tool. When acting as `main-agent`, `sub-agent`, `evolution-agent`, or `sub-e-agent`, explicitly load the matching skill before executing workflow logic.
+- Top-level `permission.skill` allows `pdf`, `magnus`, and `optics-agent-core` because `CLAUDE.md` routes PDF preprocessing, Magnus execution, and project-base routing to those skills; writes and commands remain approval-gated by agent permissions.
 - Follow `CLAUDE.md` result_class, workspace boundaries, safety red lines, and human-gate rules.
 
 ## Tool And Spawn Policy

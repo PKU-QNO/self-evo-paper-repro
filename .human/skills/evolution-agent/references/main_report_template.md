@@ -20,7 +20,7 @@
 - CAUTIONARY 经验：`<数量>`
 - FACT 经验：`<数量>`
 - PROCEDURE 经验：`<数量>`
-- 四选一统计：Save `<N>` / Improve `<N>` / Absorb `<N>` / Drop `<N>`
+- 六维裁决统计：Save `<N>` / Improve `<N>` / Absorb `<N>` / Fork `<N>` / Archive `<N>` / Drop `<N>`
 
 ### 4. 关键决策点回顾
 （你在哪些节点拍了板、拍了什么、依据什么）

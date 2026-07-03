@@ -67,7 +67,8 @@ report_meta:
     - <capsule_2>
   spawned_by: evolution-agent
   timestamp: <ISO>
-  status: completed | blocked | failed
+  execution_status: completed | blocked | failed
+  # execution_status 是任务执行状态，不是 result_class。
 artifacts:
   - path: <.work/.evolution 下路径>
     type: review | cluster | draft | validation | report

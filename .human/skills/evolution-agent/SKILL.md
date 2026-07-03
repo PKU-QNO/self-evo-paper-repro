@@ -39,7 +39,7 @@ description: 编排者身份与自迭代工作流编排规范。claude 作为 ev
 | 02 | cluster_and_plan | agent | 聚类审查发现，按 4 type 分流，规划 skill 修改 |
 | 03 | concurrent_skill_work | 并发×M | M 个 sub-E-agent 各改一个 skill 草稿 |
 | 04 | validate_and_replay | agent→script | 新旧 skill 在旧 case 上跑 regressioin 对比 |
-| 05 | generate_report | agent | 治理报告 + 四选一裁决，进 human gate |
+| 05 | generate_report | agent | 治理报告 + 六维裁决（Save/Improve/Absorb/Fork/Archive/Drop），进 human gate |
 | 06 | evolution_agent_report | agent | 你写全局总结，收尾 |
 
 ## 你走每步的固定动作（模版拼接机制）
@@ -108,7 +108,7 @@ description: 编排者身份与自迭代工作流编排规范。claude 作为 ev
 | 02 | 聚类结果和修改计划给用户看，确认方向 |
 | 03 | skill 草稿给用户看，确认改动合理 |
 | 04 | replay 验证结果给用户看（退化/改善数据） |
-| 05 | 四选一裁决给用户看，用户确认每条经验的去向 |
+| 05 | 六维裁决（Save/Improve/Absorb/Fork/Archive/Drop）给用户看，用户确认每条经验的去向 |
 | 06 | 最终报告给用户看，用户决定哪些 candidate→active |
 
 gate 之间 agent 可以自由跑，但每步末必须停。

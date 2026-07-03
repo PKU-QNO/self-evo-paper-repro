@@ -99,10 +99,11 @@ SEPR 明确只允许三层委派：`main/evolution -> sub/sub-E -> leaf subsubag
 
 ## .human/ 与 .claude/ 双目录
 
-- `.human/skills/` = **中文设计稿**，人是读者。当前所有 9 个 skill 的中文设计存这里。
-- `.claude/skills/` = **英文 prompt-engineered 版**，agent 实际运行时读。当前只有从 optics_agent 复制的领域 skill，4 个 agent 身份 skill 待后期写。
-- **现阶段**：`.claude/skills/` 镜像 `.human/skills/` 内容（同为中文），等设计稳定后 `.claude/skills/` 翻译为英文。
-- **双写机制**：workflow 跑时更新 skill，要同时写 `.human/`（人看的设计稿）和 `.claude/`（agent 读的执行版）。
+- `.human/skills/` = **中文审查稿**，人是读者，用于审阅设计意图和流程口径。
+- `.claude/skills/` = **中文详细执行版**，agent 实际运行时读；4 个 agent 身份详细版已完成（约 6465 行）。
+- 英文 prompt-engineered 版是可选后期优化，不是当前阻塞项。
+- `.human/` 与 `.claude/` 不是逐字镜像；`.claude/` 可比 `.human/` 更详细、更适合执行。
+- **双写同步机制**：凡更新 skill 正文，关键协议字段必须两侧同步，包括 `result_class`、路径约定、报告 schema、human gate、权限/安全红线。
 
 ## 关键节点必须请求用户意见（重要）
 
@@ -241,6 +242,8 @@ tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill
 | Magnus HPC 执行（蓝图提交/作业监控，SLURM/973G/128核） | `magnus` |
 | 项目基础路由 | `optics-agent-core` |
 | 创建/规范 skill | `skill-creator` |
+
+OpenCode 顶层 `permission.skill` 显式放行 `pdf`、`magnus`、`optics-agent-core`，因为它们在本路由表中是 step01/step06/项目基础路由的可加载 skill；具体写入和命令仍受 agent 级 `edit: ask` / `bash: ask` 约束。
 
 ## skill 与 blueprint 格式
 

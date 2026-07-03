@@ -268,7 +268,7 @@ points:
   - point_id: <单点 ID>
     values: {<参数名>: <值>}
     result_path: <该点结果路径>
-    result_class: success | partial | fallback | blocked | failed | archived
+    result_class: not_run | pipeline_completed | simulation_completed | diagnostic_only | surrogate_fallback | partial_physical_match | physical_reproduction_success
 rerun:
   single_point: <复跑单点入口>
   full_figure: <复现整图入口>

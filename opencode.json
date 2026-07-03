@@ -21,6 +21,9 @@
       "optics-mie-reproduction": "allow",
       "optics-magnus-platform": "allow",
       "optics-magnus-artifacts": "allow",
+      "pdf": "allow",
+      "magnus": "allow",
+      "optics-agent-core": "allow",
       "skill-creator": "ask"
     },
     "task": {

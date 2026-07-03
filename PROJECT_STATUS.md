@@ -4,11 +4,11 @@
 
 ## 1. 工作区一句话定位
 
-SEPR = 光学论文复现自进化 agent，`.human/` 是人话版中文设计稿，`.claude/` 是英文 prompt-engineered 执行版，采用 4 agent 架构：复现 workflow 的 `main-agent` + `sub-agent`，自迭代 workflow 的 `evolution-agent` + `sub-E-agent`。
+SEPR = 光学论文复现自进化 agent，`.human/` 是中文审查稿，`.claude/skills/` 是中文详细执行版（4 身份约 6465 行已完成），采用 4 agent 架构：复现 workflow 的 `main-agent` + `sub-agent`，自迭代 workflow 的 `evolution-agent` + `sub-E-agent`。英文 prompt-engineered 版是可选后期优化。
 
 ## 2. 当前阶段
 
-当前处于设计阶段完成、准备进入首轮执行的状态：`.human/` 已经形成完整项目计划，等待用户批注后再把执行版 `.claude/skills/` 写成英文 prompt-engineered 版本。
+当前处于设计阶段完成、准备进入首轮执行的状态：`.human/` 已经形成完整项目计划，`.claude/skills/` 中文详细执行版已完成并用于 agent 实际运行。`.human/` 与 `.claude/` 不是逐字镜像；关键协议字段（result_class、路径、报告 schema、human gate）必须双写同步。
 
 近期启动点是 Mie 第一阶段：教材与 11 篇论文已就位，等待用户确认/发话后启动第一篇或第一组 Mie 复现。
 
@@ -46,8 +46,8 @@ self-evo-paper-repro/
 ├── .E-history/             # evolution 历史报告，按次数排序
 ├── .result/                # 最终交付区，由主 agent 确认后复制
 ├── todo.md                 # 全局日志，每次 workflow/Eflow 结束前追加
-├── .human/                 # 中文设计稿，人读
-├── .claude/                # 英文执行版待写，agent 运行时读
+├── .human/                 # 中文审查稿，人读
+├── .claude/                # 中文详细执行版，agent 运行时读
 ├── papers/                 # junction 到 optics_agent/papers
 └── reproduction_test/      # junction 到 optics_agent/reproduction_test
 ```
@@ -57,7 +57,7 @@ self-evo-paper-repro/
 ### 已完成
 
 - 建立 SEPR 独立工作区定位：隔离 optics_agent 的 coding 上下文，专门跑论文复现 + skill/蓝图自进化实验。
-- 完成 `.human/DESIGN.md` 顶层设计，明确 `.human/` 是中文审查稿、`.claude/` 是英文执行版。
+- 完成 `.human/DESIGN.md` 顶层设计，明确 `.human/` 是中文审查稿、`.claude/skills/` 是中文详细执行版，英文版为可选后期优化。
 - 确定 4 agent 架构：复现 `main-agent` / `sub-agent`，自迭代 `evolution-agent` / `sub-E-agent`。
 - 确定三层 spawn 规则：编排者不做隔离活，执行者可 spawn 子子 agent，第 3 层不再 spawn。
 - 确定 workflow 与 E-flow 隔离：W-flow 产 capsule 和草稿，E-flow 批量治理，不互相递归调用。
@@ -67,10 +67,10 @@ self-evo-paper-repro/
 
 ### 待完成
 
-- 任务 9：把 `.human/` 设计稿转成 `.claude/skills/` 英文 prompt-engineered 执行版。
+- 可选后期优化：把 `.claude/skills/` 中文详细执行版再优化为英文 prompt-engineered 版（非当前阻塞项）。
 - 启动 Mie 第一阶段实际复现，跑通第一篇/第一组论文的 10 步 workflow。
 - 建立初期 replay set，先用 1-2 个旧 case 跑通 validate_and_replay。
-- 治理 `.claude/skills/` 旧内容，后期替换为英文 4 身份 skill，并决定领域 skill 的放置方式。
+- 治理 `.claude/skills/` 旧内容，并决定领域 skill 的放置方式；关键协议字段与 `.human/skills/` 双写同步。
 
 ## 7. 如何开始 Mie 第一阶段
 
