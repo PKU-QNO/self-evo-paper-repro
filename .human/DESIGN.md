@@ -96,7 +96,7 @@ subsubagent 做不需要多步推理、不需要写代码、就干一件确定�
 
 ### subsubagent 怎么管
 
-- 读同一个 sub-agent / sub-E-agent skill（身份一致，只是任务更小）
+- subsubagent 用独立的 `sub-leaf` / `sub-e-leaf` 身份（工具不含 `Agent`，框架层无法再 spawn；2026-07-03 由"复用 sub 身份+prompt 省略 Agent"软约束硬化为独立 leaf agent，详见 CLAUDE.md「子 Agent 深度」节）
 - 任务单要小、明确、单点
 - 限定只读范围（比如只能读某个 PDF 某一页）
 - 报告用简化模板（只填 3 字段：身份/做了什么/结果），不填 8 字段

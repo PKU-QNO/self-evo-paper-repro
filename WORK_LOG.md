@@ -106,6 +106,17 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 - **两系统对齐表**：编排层可 spawn，执行层只 spawn 叶子，叶子层禁止 spawn；工具 allowlist 统一为 `Read/Write/Edit/Bash/Glob/Grep/ToolSearch/Skill/Agent`（OpenCode 对应 read/glob/grep/list/edit/bash/skill/task），`edit/bash` 默认 `ask`。
 - **文档同步完成**：`CLAUDE.md` 新增“子 Agent 深度与工具限制”节，`AGENTS.md` 更新 Tool/Spawn Policy，`.opencode/prompts/` 6 个 prompt 明确 leaf 机制与“不再委派”。
 
+### 阶段十一：V3 加固基础版落地 + OpenCode 撤销（2026-07-03）
+
+> 本阶段实操 SEPR 本体（Claude Code 侧），走用户 human gate。**以下 supersede 阶段八/九与 §5.18–5.20 中关于 OpenCode / 双系统 / 三文件同步 / 旧叶子软约束的描述。**
+
+- **叶子层硬化（堵审计 C1）**：新增 `.claude/agents/sub-leaf.md`、`sub-e-leaf.md`（`tools` 不含 `Agent`，框架层无法再 spawn）。执行者 spawn 叶子改用 `subagent_type: sub-leaf` / `sub-e-leaf`，不再“复用 sub 身份 + prompt 提醒省略 Agent”（软约束→硬约束）。同步改 `sub-agent.md` / `sub-E-agent.md` body + `.claude|.human/skills/sub-agent|sub-E-agent/SKILL.md`（原则 1+2）。
+- **skills: 预加载**：4 个非叶子 agent frontmatter 加 `skills:` 预加载各自身份 skill（main→main-agent 等）；`skill-print.py` 保留兜底；叶子不预加载（保持轻）。
+- **OpenCode 撤销**：删 `opencode.json`、`.opencode/`（含 node_modules）、`scripts/start-opencode-sepr.ps1`；`AGENTS.md` 降为指向 `CLAUDE.md` 的 stub；`CLAUDE.md` 删「三文件同步规则」节、「子 Agent 深度」改 Claude-only+leaf、删 OpenCode 路由注。**三文件同步约束取消**（规则主源 = `CLAUDE.md` 一处）。optics_agent 侧 CLAUDE.md/AGENTS.md「双系统」段改写 + hardlink 重建。Opus 不稳应急 = 改 Claude Code 的 URL/API 指向 DeepSeek。
+- **搁置**：hooks（推迟到 Mie 跑通后）、`disable-model-invocation`（提交作业能力在 `magnus` 工作流 skill 内，blanket disable 会破坏 COMSOL case 自动加载，正解走 hooks 的 `PreToolUse` 拦 submit 命令）。
+- **验证**：6 个 agent frontmatter YAML 解析 OK；两 leaf 确认无 `Agent` 工具；`sub-agent` / `sub-E-agent` skill quick_validate 通过；active `.claude` 无旧叶子/OpenCode 残留。
+- **配套产出**（optics_agent 侧）：`papers/SEPR/V3-HARDENING-DESIGN-CN.md`（提案，已官方核验）、`V3-CHANGELOG-SINCE-HUMAN-CN.md`、`V4-ROADMAP-CN.md`、`reproduction_test/mie/MIE-复现执行手册-CN.md`。
+
 ---
 
 ## 3. 当前状态（2026-06-30）

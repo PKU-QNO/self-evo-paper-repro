@@ -6,6 +6,8 @@ disallowedTools: mcp__*, NotebookEdit
 model: inherit
 permissionMode: default
 maxTurns: 50
+skills:
+  - main-agent
 ---
 
 # SEPR Main Agent

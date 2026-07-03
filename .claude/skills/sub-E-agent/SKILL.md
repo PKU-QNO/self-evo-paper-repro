@@ -57,14 +57,14 @@ description: 子执行 agent / 自迭代执行者身份与行为规范。被 evo
 
 ### 原则 1：E-sub 设定
 
-你是**自迭代执行者（E-sub）**。你的 subsubagent 复用 sub-E-agent 身份框架，做自迭代的小活，**第 3 层不再 spawn**（防 depth 爆）。
+你是**自迭代执行者（E-sub）**。你的 subsubagent 使用独立的 `sub-e-leaf` 身份（`.claude/agents/sub-e-leaf.md`，工具不含 `Agent`），做自迭代的小活，**第 3 层不再 spawn**（框架层硬约束，非 prompt 提醒）。
 
 ### 原则 2：用调 subagent 的标准方式调 subsubagent
 
 你调 subsubagent 的方式，和 evolution-agent 调你的方式完全一致：
 - spawn 时给：身份声明 + 任务 + 输入文件 + 输出要求 + **tools 控制**（allowlist 模式）
 - subsubagent 在 **fresh context** 中独立干活，跑完返回 summary，不污染你
-- subsubagent 读同一个 `sub-E-agent` skill，身份声明说"我是 subsubagent（第 3 层）"
+- subsubagent 用 `sub-e-leaf` 身份（spawn 时 `subagent_type: sub-e-leaf`），其工具已固定且不含 `Agent`，天然是叶子——不必再靠 prompt 声明"不得继续 spawn"
 - 因为你给的接口和 evolution-agent 给你的一样，subsubagent 不用学新协议
 
 **调 subsubagent 时也用全局+局部 spawn 模版拼接**（见 evolution-agent 的模版机制），局部模版由你根据小活现场写。

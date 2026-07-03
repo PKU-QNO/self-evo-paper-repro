@@ -12,6 +12,8 @@ SEPR = 光学论文复现自进化 agent，`.human/` 是中文审查稿，`.clau
 
 近期启动点是 Mie 第一阶段：教材与 11 篇论文已就位，等待用户确认/发话后启动第一篇或第一组 Mie 复现。
 
+> **近期变更（2026-07-03，见 WORK_LOG 阶段十一）**：落地 V3 加固基础版——叶子层硬化（新增 `sub-leaf`/`sub-e-leaf` agent）、4 agent `skills:` 预加载；**撤销 OpenCode**（删 `opencode.json`/`.opencode/`，`AGENTS.md` 降 stub，三文件同步约束取消，仅面向 Claude Code；Opus 不稳应急改 URL/API 指向 DeepSeek）。hooks 与 disable-model-invocation 搁置到 Mie 跑通后。
+
 ## 3. 4 agent 架构表
 
 | workflow | 编排者 | 执行者 | 步数 |
@@ -24,7 +26,7 @@ SEPR = 光学论文复现自进化 agent，`.human/` 是中文审查稿，`.clau
 ## 4. 关键机制
 
 - **spawn 模版拼接**：spawn 子 agent 时由全局模板、局部任务模板和主 agent 对任务的理解拼接成完整任务单。
-- **subsubagent**：sub-agent / sub-E-agent 用标准方式调用子子 agent，多调用于防止上下文过长，第 3 层不再 spawn。
+- **subsubagent（叶子层，2026-07-03 硬化）**：sub-agent / sub-E-agent 用 `subagent_type: sub-leaf` / `sub-e-leaf` 调第 3 层叶子——叶子定义的 `tools` 不含 `Agent`，从框架层即无法再 spawn（不再靠 prompt 软约束）。
 - **六维裁决 + 三级治理**：经验裁决从 Save/Improve/Absorb/Drop 扩展为 Save/Improve/Absorb/Fork/Archive/Drop，并用 Tier-1/2/3 控制进入 skill 的证据门槛。
 - **validate_and_replay**：selective replay 分层 A/B/C；E-flow 不调 W-flow，核心方法变化标注需人工开 W-flow 重跑。
 - **经验 4 type**：经验分为 GUIDING、CAUTIONARY、FACT、PROCEDURE，分别进入提示词备注、pitfalls、memento fact 或 skill candidate。

@@ -11,34 +11,23 @@
 - 代码注释和标识符遵循项目既有约定（可英文）
 - 给用户看的文档要结构化、用户可读，不是给机器的裸数据
 
-## 三文件同步规则（强制，避免 Claude/OpenCode 不同步）
+## 执行系统（仅 Claude Code）
 
-SEPR 有三个根配置文件，改任何一个必须同步改其它两个，否则 Claude Code 和 OpenCode 行为分叉：
+SEPR 现只面向 Claude Code 一套执行系统。OpenCode（GPT-5.5 备选）已于 2026-07-03 撤销：`opencode.json`、`.opencode/`、`scripts/start-opencode-sepr.ps1` 已删除，`AGENTS.md` 降为指向本文件的 stub。因此**不再有"三文件同步"约束**——规则主源就是本 `CLAUDE.md` 一处。
 
-| 文件 | 作用 | 谁读 |
-|------|------|------|
-| `CLAUDE.md` | 规则主源（路由+红线+全规范） | Claude Code + OpenCode（via opencode.json instructions） |
-| `AGENTS.md` | OpenCode 本地规则入口（隔离上级） | OpenCode（向上 walk 第一个命中） |
-| `opencode.json` | OpenCode permission/agent 配置 | OpenCode |
+Opus 不稳定时的应急方案：改 Claude Code 的 URL/API 指向 DeepSeek（非 OpenAI-specific 的 response 接口可顶），而不是维护第二套 agent 配置。
 
-**同步要求**：
-- 改 `CLAUDE.md` 的规则（红线/流程/result_class/失败防护等）→ 检查 `AGENTS.md` 是否要同步引用，检查 `opencode.json` 的 permission 是否要同步调整
-- 改 `AGENTS.md` 的隔离/路由规则 → 同步到 `CLAUDE.md`
-- 改 `opencode.json` 的 permission/agent 定义 → 在 `CLAUDE.md` 或 `AGENTS.md` 记录"为什么这么配"
-- 任何规则变更，三个文件都要审一遍，避免一个系统知道另一个不知道
+## 子 Agent 深度与工具限制（Claude Code）
 
-**同样规则适用于 optics_agent**：optics_agent 的 `AGENTS.md`（= CLAUDE.md hardlink）要记录 SEPR 三文件同步要求，避免 OA 的 CC 改 SEPR 时漏改。
+SEPR 明确只允许三层委派：`main/evolution -> sub/sub-E -> leaf`。第 3 层叶子不得继续 spawn。全部由 `.claude/agents/*.md` 定义：
 
-## 子 Agent 深度与工具限制（Claude Code / OpenCode 对齐）
+| 层 | agent 定义 | maxTurns | 工具 | spawn 规则 |
+|----|-----------|----------|------|-----------|
+| 编排层 | `main-agent` / `evolution-agent` | 50 | 含 `Agent` | 只派对应执行者 |
+| 执行层 | `sub-agent` / `sub-e-agent` | 15 | 含 `Agent` | 只派对应叶子身份 |
+| 叶子层 | `sub-leaf` / `sub-e-leaf` | 15 | **不含 `Agent`** | 无法再 spawn（框架层硬约束） |
 
-SEPR 明确只允许三层委派：`main/evolution -> sub/sub-E -> leaf subsubagent`。第 3 层叶子不得继续 spawn。
-
-| 系统 | 配置位置 | 编排者 | 执行者 | 叶子层 | 默认工具/权限 |
-|------|----------|--------|--------|--------|----------------|
-| Claude Code | `.claude/agents/*.md` | `main-agent` / `evolution-agent`，`tools` 含 `Agent`，`maxTurns: 50` | `sub-agent` / `sub-e-agent`，`tools` 含 `Agent`，只准派叶子，`maxTurns: 15` | 由执行者 spawn 时在 prompt 中强制省略 `Agent` | `Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill`；编排/执行层另含 `Agent`；`disallowedTools: mcp__*, NotebookEdit` |
-| OpenCode | `opencode.json` + `.opencode/prompts/*.md` | `sepr-main` / `sepr-evolution` 只准派对应执行者，`maxTurns: 50` | `sepr-sub` / `sepr-sub-e` 只准派对应 leaf，`maxTurns: 15` | `sepr-sub-leaf` / `sepr-sub-e-leaf`，`permission.task: deny`，`maxTurns: 15` | `read/glob/grep/list: allow`，`edit/bash: ask`，`skill` 按身份放行，`task` 按深度白名单放行 |
-
-对齐原则：Claude Code 用 `tools`/`disallowedTools`/`maxTurns` frontmatter 控制工具和轮数；OpenCode 用 `permission.task` 控制可派 agent，用 `edit/bash` 保持审批，用 `maxTurns` 做等价软限制。改任一侧配置时必须同步审查另一侧，避免一个系统能继续递归而另一个不能。
+**叶子层硬化（2026-07-03，堵审计 C1）**：第 3 层不再"复用执行者身份 + prompt 提醒省略 Agent"（软约束），改为独立的 `sub-leaf` / `sub-e-leaf` agent 定义——其 `tools` 不含 `Agent`，从框架层即无法继续 spawn。执行者 spawn 叶子时用 `subagent_type: sub-leaf`（或 `sub-e-leaf`）。四个非叶子 agent 均 `disallowedTools: mcp__*, NotebookEdit`；工具 allowlist 统一 `Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill`（编排/执行层另含 `Agent`）。四个非叶子 agent 另用 `skills:` frontmatter 预加载各自身份 skill（`skill-print.py` 仍作兜底）。
 
 ## 工作区身份
 
@@ -242,8 +231,6 @@ tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill
 | Magnus HPC 执行（蓝图提交/作业监控，SLURM/973G/128核） | `magnus` |
 | 项目基础路由 | `optics-agent-core` |
 | 创建/规范 skill | `skill-creator` |
-
-OpenCode 顶层 `permission.skill` 显式放行 `pdf`、`magnus`、`optics-agent-core`，因为它们在本路由表中是 step01/step06/项目基础路由的可加载 skill；具体写入和命令仍受 agent 级 `edit: ask` / `bash: ask` 约束。
 
 ## skill 与 blueprint 格式
 
