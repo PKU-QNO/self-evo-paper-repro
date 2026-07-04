@@ -1,0 +1,55 @@
+{
+  "mcpServers": {
+    "arxiv-mcp": {
+      "type": "stdio",
+      "command": "D:\\Download\\anaconda\\python.exe",
+      "args": ["C:\\Users\\27370\\.memento\\arxiv-mcp-server.py"]
+    },
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp"
+    },
+    "github": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "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"
+      }
+    },
+    "firecrawl": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "firecrawl-mcp"],
+      "env": {
+        "FIRECRAWL_API_KEY": "fc-4b70e09f1ae04a1a8f3fa45d89033b3e"
+      }
+    },
+    "sourcegraph": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["sourcegraph-mcp-server"],
+      "env": {
+        "SOURCEGRAPH_API_KEY": "sgp_e3cb05880bc40429_cc377b6ceda8048ff577facef2ba98fb78dd61cb"
+      }
+    },
+    "memento-mcp": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": [
+        "/c",
+        "C:\\Users\\27370\\AppData\\Roaming\\npm\\memento-mcp.cmd"
+      ],
+      "env": {
+        "MEMENTO_DATABASE_PATH": "C:\\Users\\27370\\.memento\\memory.db",
+        "MEMENTO_DUMMY_KEY": "dummy"
+      }
+    },
+    "academic-research": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["academic-research-mcp"],
+      "env": {}
+    }
+  }
+}

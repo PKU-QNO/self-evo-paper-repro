@@ -171,10 +171,15 @@ reproduction_test/ -> optics_agent/reproduction_test (junction)
 ## 记忆要求（每个 agent 都遵守）
 
 **每个 agent（main-agent / sub-agent / evolution-agent / sub-E-agent）开始行动前必须做：**
+
+0. **MCP 预检（第一步，先于一切）**：确认本 session 的 MCP 工具（尤其 `memory_search` / `memory_store` 等 memento 工具，以及 `ToolSearch`）**真实可调用**，不要假设它们在。
+   - **可用** → 照第 1/2 步执行记忆纪律。
+   - **不可用**（工具不存在 / 调用报错 / 全部 MCP 断联）→ **不得静默跳过还假装搜过/存过记忆**。必须：① 在报告里显式写明「本 session memento 不可用，记忆纪律降级」；② 降级落 `.work/memento-cache/` 下结构化 JSON（带 provenance 五要素），供 MCP 恢复后回灌；③ 记忆污染是第 2-3 个 case 才炸的信号，首篇复现库空，降级非阻塞——但必须**声明**，不得静默。
+   - 说明：memento 断联属环境性故障（如全部 MCP 断联），不是「未接入」；预检的价值是把「红线静默失效」变成「大声降级」。robust 版是 SessionStart hook 探活，属 hooks 家族，跑通 Mie 后随 hooks 一起硬化。
 1. 搜索 memento 记忆库（`memory_search`），找和当前任务相关的已有记忆，避免重复劳动
 2. 结束前必须更新记忆（`memory_store` / `decisions_log` / `pitfalls_log`），存本次的关键事实/决策/教训
 
-子 agent 没有自动记忆注入，主 agent spawn 时在指令里强制要求这两步。
+子 agent 没有自动记忆注入，主 agent spawn 时在指令里强制要求这三步（含第 0 步 MCP 预检）。
 
 所有记忆写入和报告中的 provenance 必须统一使用以下五个字段名，不混用 source、claim、evidence、scope、confidence 等别名：
 
