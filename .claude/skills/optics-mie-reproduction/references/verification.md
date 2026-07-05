@@ -12,10 +12,12 @@ These hold for any parameters; AI cannot fake them; a human without Mie knowledg
 | 1.2 | Zero absorption when lossless | $\mathrm{Im}(\varepsilon)=0 \Rightarrow C_{abs}=0$ | $10^{-12}$ |
 | 1.3 | Optical theorem | $C_{ext}=\frac{4\pi}{k}\mathrm{Im}\,S(0)$ | $10^{-8}$ relative |
 | 1.4 | Rayleigh limit | $Q_{sca}\propto x^4$ as $x\to0$ | log-log slope $=4\pm0.01$ |
-| 1.5 | Large-size extinction paradox | $Q_{ext}\to2$ as $x\to\infty$ | $\|Q_{ext}-2\|<0.05$ for $x>50$ |
+| 1.5 | Large-size extinction paradox | $Q_{ext}\to2$ as $x\to\infty$ | **trend criterion**: $Q_{ext}$ monotonically approaches 2 with growing $x$; end-point $x=800$ gives $\|Q_{ext}-2\|<0.05$（见下方适用条件） |
 | 1.6 | Spherical symmetry | scattering independent of incident polarization | exact |
 
 Layer 1 passing only means "no big mistake"; it does NOT certify numerical accuracy. Layers 2-3 are still required.
+
+**1.5 适用条件（2026-07-05 修订，Akimov case 首跑 Gate3 教训）**：$Q_{ext}\to2$ 对**无损介质球收敛极慢**（代数收敛 ~$1/x$ 边缘衍射修正）——$x=200$ 仍偏 0.09，单点 $\|Q_{ext}-2\|<0.05$ 需 $x\gtrsim1000$。弱阻尼（$m$ 带小虚部）只衰减叠加的 ripple 抖动，**压不掉慢收敛主偏离**。故 1.5 判据是**趋势判据**（$Q_{ext}$ 随 $x$ 单调趋 2 + 末点 $x=800$ 达 0.05），不是"某几点精确达 2"。**失败含义**：若趋势不单调下降或末点远大于 0.05 → 结构性实现错（如漏 $b_l$ 项、系数错半）；单点 ripple 反弹 ≤0.02 属正常。**不适用**：强吸收球（$Q_{ext}$ 不趋 2 而趋更大值）不该用本判据。早先硬编码 $xs=[50,80,120,200]$+固定 tol 的版本会对正确的无损实现假阴性（verifier 自身缺陷），已废。
 
 ## Layer 2 — Known Limits / Degeneracies
 

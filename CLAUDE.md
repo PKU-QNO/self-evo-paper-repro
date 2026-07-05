@@ -17,6 +17,33 @@ SEPR 现只面向 Claude Code 一套执行系统。OpenCode（GPT-5.5 备选）�
 
 Opus 不稳定时的应急方案：改 Claude Code 的 URL/API 指向 DeepSeek（非 OpenAI-specific 的 response 接口可顶），而不是维护第二套 agent 配置。
 
+## 模型路由与 codex 委托（强制，2026-07-05 用户拍板，省经费+省上下文）
+
+背景：codex（GPT-5.5，经 `codex-cli` MCP）token 单价约为 Opus 4.8 的 **1/50**。原则：**判断密度决定谁干活**——机械执行发 codex，物理判断与裁决留 Claude。契约（8 字段报告、result_class、provenance、GATE 决定）**全部留在 Claude 侧**，不给 codex 重写 skill。
+
+**默认规则：Claude 不亲自读写文件——文件读写与机械执行一律委托 codex-MCP**（读文件内容不进 Claude context = 省上下文的最大头）。**白名单豁免（仅这两类 Claude 亲自做）**：
+
+1. **裁决必需的读**：main 在 gate 停机点亲读 GATE 决定 / verifier 输出 / 关键报告——裁决依据不得经 codex 转述（转述层会漂移，Gate4 已实证）。
+2. **契约文件的写**：8 字段报告、capsule、GATE 决定、WORK_LOG、run_manifest——这些是 Claude 的裁决产出，亲写并自校；不得由 codex 代笔。
+
+**分工表**：
+
+| 工作 | 执行方 |
+|---|---|
+| PDF/文本提取、跑代码脚本、数字化、批量产物、一切机械读写、非 workflow 杂活、leaf 单点 | **codex**（调用即 leaf，物理上不能再 spawn） |
+| 代码实现（step04 写码） | **codex 写，Claude 验**（verifier 是确定性裁判，质量由它兜底） |
+| step05 对抗审查 | **codex + Claude 双审**（跨模型异构审查，防 self-preference bias） |
+| 物理推导（derivation.md）、step02 理解、step03 spec、step07/08 物理归因 | **Claude**（Gate3 核公式的上游，verifier 验代码不验推导文本） |
+| main 编排、gate 裁决、capsule/WORK_LOG/报告 | **Claude（不省这条）** |
+
+**codex 调用安全规范（硬约束）**：每次调用显式 `sandbox: workspace-write` + `approval-policy: untrusted`，**永不** `danger-full-access`；`cwd` 限 case 文件夹；secrets（secret.json/SSH/license）在 codex 可达范围外。codex 产物一律落盘，**Claude 验收（文件存在 + verifier PASS + 抽查）后才进报告**——codex 自述不作数，与对 Claude sub 的纪律一致。codex 调用计入 case 级资源上限（与 spawn 20 同口径）。
+
+## Malformed tool-call 熔断（强制，2026-07-05）
+
+已知机制（官方 issue #61367/#62344/#64097 等 + 本项目实测）：Opus 4.8 长上下文偶发（~1.5%）把 tool call 格式写坏；harness 把坏文本留在 transcript，模型**自回归模仿自己上一轮的坏格式**（即使它"知道"错了，模仿的是 pattern 不是意图），一次偶发级联成连败（有 issue 记录 24 连败）；错 3 次后几乎写不出正确 tool call（用户实测）。
+
+**熔断规则**：同一 session 累计 **2 次** malformed tool call（"Your tool call was malformed"、裸 `<invoke>` 文本、`antml:` 前缀丢失、invoke 前杂 token）→ **立即熔断**：① 停止当前工作，不再尝试第 3 次工具调用；② 把当前状态写入 handoff（WORK_LOG 增量 + case 文件夹 HANDOFF 文件，纯文本输出不需要 tool call 也要尽量写——若写文件本身也失败，直接在对话里输出 handoff 全文让用户复制）；③ 告知用户开新对话接手；④ **绝不** `--resume` 本 session。缓解：每 gate 停机点默认断 session 换新对话（同时也是省钱正解——391k 旧上下文的缓存在 gate 等待期早已过期）。
+
 ## v3-final 设计归档（在 optics_agent 侧）
 
 SEPR 的设计 / 风险审计 / 演进文档（V1→V2→V3）的 **canonical 版本**汇总在元工作区 `optics_agent/v3-final/`（本工作区通过 junction 到不了，需去 optics_agent 侧看），索引 `optics_agent/v3-final/README.md`。原散落在 `optics_agent/papers/SEPR/` 等处的文件已改名带 `_moved` 后缀并冻结（顶部有面包屑）。

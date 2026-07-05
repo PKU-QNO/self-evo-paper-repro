@@ -46,6 +46,12 @@
       "command": "uvx",
       "args": ["academic-research-mcp"],
       "env": {}
+    },
+    "codex-cli": {
+      "type": "stdio",
+      "command": "cmd",
+      "args": ["/c", "codex.cmd", "mcp-server"],
+      "timeout": 360000
     }
   }
 }

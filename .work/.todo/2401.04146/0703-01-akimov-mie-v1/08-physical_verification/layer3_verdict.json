@@ -1,0 +1,235 @@
+{
+  "layer3_metric": "nearest normalized distance (digitized -> repro curve)",
+  "normalization": {
+    "qe_span": 10.0,
+    "eps_span": 25.0
+  },
+  "thresholds": {
+    "median": 0.01,
+    "p95": 0.03,
+    "note": "SEPR 自定阈值, loci 图无社区先例 RMSE/距离标准; 最终由 Gate4 用户认可后生效, 不得自行放宽"
+  },
+  "global": {
+    "median": 0.0074626848258950215,
+    "p95": 0.04257992566051628,
+    "max": 0.2000803552540947,
+    "n": 1982,
+    "pass_median": true,
+    "pass_p95": false
+  },
+  "completeness": {
+    "status": "PASS",
+    "source": ".work/.todo/2401.04146/0703-01-akimov-mie-v1/06-run_and_monitor/completeness_check.txt",
+    "note": "Gate2 强制附加判据, 切片法 vs contour 支数逐面板一致, contour 覆盖 >99.8%"
+  },
+  "per_panel": {
+    "TM1": {
+      "sr": {
+        "pol": "TM",
+        "l": 1,
+        "type": "sr",
+        "median": 0.012328430604112105,
+        "p95": 0.12715856680951776,
+        "max": 0.17884648136420084,
+        "n": 173,
+        "pass_median": false,
+        "pass_p95": false,
+        "pass": false
+      },
+      "nr": {
+        "pol": "TM",
+        "l": 1,
+        "type": "nr",
+        "median": 0.007360635121377644,
+        "p95": 0.018668887233621135,
+        "max": 0.06046799999999999,
+        "n": 179,
+        "pass_median": true,
+        "pass_p95": true,
+        "pass": true
+      }
+    },
+    "TM2": {
+      "sr": {
+        "pol": "TM",
+        "l": 2,
+        "type": "sr",
+        "median": 0.011692195188533256,
+        "p95": 0.05996936892728855,
+        "max": 0.18511579055380623,
+        "n": 171,
+        "pass_median": false,
+        "pass_p95": false,
+        "pass": false
+      },
+      "nr": {
+        "pol": "TM",
+        "l": 2,
+        "type": "nr",
+        "median": 0.006863999999999995,
+        "p95": 0.021203699000363396,
+        "max": 0.06102399999999999,
+        "n": 171,
+        "pass_median": true,
+        "pass_p95": true,
+        "pass": true
+      }
+    },
+    "TM3": {
+      "sr": {
+        "pol": "TM",
+        "l": 3,
+        "type": "sr",
+        "median": 0.011051361886476777,
+        "p95": 0.052280689981980405,
+        "max": 0.2000803552540947,
+        "n": 149,
+        "pass_median": false,
+        "pass_p95": false,
+        "pass": false
+      },
+      "nr": {
+        "pol": "TM",
+        "l": 3,
+        "type": "nr",
+        "median": 0.0066587445147783,
+        "p95": 0.018195758284825066,
+        "max": 0.060984000000000003,
+        "n": 171,
+        "pass_median": true,
+        "pass_p95": true,
+        "pass": true
+      }
+    },
+    "TE1": {
+      "sr": {
+        "pol": "TE",
+        "l": 1,
+        "type": "sr",
+        "median": 0.009863186886260202,
+        "p95": 0.08789760121849696,
+        "max": 0.1652788506525336,
+        "n": 163,
+        "pass_median": true,
+        "pass_p95": false,
+        "pass": false
+      },
+      "nr": {
+        "pol": "TE",
+        "l": 1,
+        "type": "nr",
+        "median": 0.00584458046342462,
+        "p95": 0.01891654368236404,
+        "max": 0.06143200000000001,
+        "n": 173,
+        "pass_median": true,
+        "pass_p95": true,
+        "pass": true
+      }
+    },
+    "TE2": {
+      "sr": {
+        "pol": "TE",
+        "l": 2,
+        "type": "sr",
+        "median": 0.008879010874351686,
+        "p95": 0.1314771655823175,
+        "max": 0.17227235871882424,
+        "n": 143,
+        "pass_median": true,
+        "pass_p95": false,
+        "pass": false
+      },
+      "nr": {
+        "pol": "TE",
+        "l": 2,
+        "type": "nr",
+        "median": 0.005437154791789162,
+        "p95": 0.01694157793371619,
+        "max": 0.06095599999999999,
+        "n": 172,
+        "pass_median": true,
+        "pass_p95": true,
+        "pass": true
+      }
+    },
+    "TE3": {
+      "sr": {
+        "pol": "TE",
+        "l": 3,
+        "type": "sr",
+        "median": 0.00727301819352931,
+        "p95": 0.021092158773878697,
+        "max": 0.03148206452453149,
+        "n": 147,
+        "pass_median": true,
+        "pass_p95": true,
+        "pass": true
+      },
+      "nr": {
+        "pol": "TE",
+        "l": 3,
+        "type": "nr",
+        "median": 0.005507999999999999,
+        "p95": 0.020591859430460532,
+        "max": 0.069932,
+        "n": 170,
+        "pass_median": true,
+        "pass_p95": true,
+        "pass": true
+      }
+    }
+  },
+  "over_threshold_items": [
+    {
+      "panel": "TM1",
+      "type": "sr",
+      "median": 0.012328430604112105,
+      "p95": 0.12715856680951776,
+      "pass_median": false,
+      "pass_p95": false
+    },
+    {
+      "panel": "TM2",
+      "type": "sr",
+      "median": 0.011692195188533256,
+      "p95": 0.05996936892728855,
+      "pass_median": false,
+      "pass_p95": false
+    },
+    {
+      "panel": "TM3",
+      "type": "sr",
+      "median": 0.011051361886476777,
+      "p95": 0.052280689981980405,
+      "pass_median": false,
+      "pass_p95": false
+    },
+    {
+      "panel": "TE1",
+      "type": "sr",
+      "median": 0.009863186886260202,
+      "p95": 0.08789760121849696,
+      "pass_median": true,
+      "pass_p95": false
+    },
+    {
+      "panel": "TE2",
+      "type": "sr",
+      "median": 0.008879010874351686,
+      "p95": 0.1314771655823175,
+      "pass_median": true,
+      "pass_p95": false
+    }
+  ],
+  "layer3_verdict": "CONDITIONAL",
+  "verdict_note": "全局或部分面板 median/p95 超 SEPR 自定阈值; 需 Gate4 人审裁决 (接受为数字化误差 / 微调阈值 / sr 区域加密重测), 不自行判 FAIL 也不自行放宽",
+  "result_class_max": "partial_physical_match (待 Gate4 人审; 本步不声明 physical_reproduction_success)",
+  "tail_diagnosis": {
+    "summary": "sr 超阈点(p95>0.03)占各面板10-19%(TE3仅1.4%), 集中在中大q_e(中位q_e 4-6)的陡峭/密集分支区, 非端点效应",
+    "dq_dominated": "sr超阈点距离由q_e方向(dq_norm中位0.03-0.06, 实际dq_e~0.3-0.6)主导, eps常接近上边界14.6",
+    "nr_all_pass": "nr全部达标(median 0.005-0.007, p95<0.021), 证明复现曲线位置与数字化基线均正确",
+    "interpretation": "sr超标是最近邻度量在近垂直曲线段对数字化误差的几何放大 + 密集分支区数字化固有困难, 非复现整体偏移",
+    "vs_digitization_uncertainty": "标称数字化不确定度归一化~0.005-0.006; sr超阈点偏差(0.03-0.06)超标称6-12倍, 但成因是陡峭区度量放大而非曲线错位"
+  }
+}

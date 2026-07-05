@@ -1,0 +1,85 @@
+C:\Users\27370\Desktop\project\self-evo-paper-repro\reproduction_test/mie/code\scattering.py:98: RuntimeWarning: invalid value encountered in scalar divide
+  a_l = a_num / a_den
+C:\Users\27370\Desktop\project\self-evo-paper-repro\reproduction_test/mie/code\scattering.py:99: RuntimeWarning: invalid value encountered in scalar divide
+  b_l = b_num / b_den
+adversarial_probes.py — step05 theory_check 对抗性探针原始 stdout
+numpy 2.3.5
+======================================================================
+P1: Rayleigh 极限符号 — 对 BH 教材解析式 a_1 = -i(2/3)x^3 (m^2-1)/(m^2+2)
+    (BH 1983 式 4.56/4.57, e^{-iwt}; 符号是 xi 约定的判据, 不靠 verifier)
+  m=1.5 x=0.010: code a1=3.844702e-14-1.960791e-07j
+                 教材 a1=0.000000e+00-1.960784e-07j  rel=3.53e-06  Im同号=True
+  m=1.5 x=0.020: code a1=2.460662e-12-1.568650e-06j
+                 教材 a1=0.000000e+00-1.568627e-06j  rel=1.42e-05  Im同号=True
+  m=2.0 x=0.010: code a1=1.111156e-13-3.333400e-07j
+                 教材 a1=0.000000e+00-3.333333e-07j  rel=2.00e-05  Im同号=True
+  m=2.0 x=0.020: code a1=7.112249e-12-2.666880e-06j
+                 教材 a1=0.000000e+00-2.666667e-06j  rel=8.00e-05  Im同号=True
+  m=1.2 x=0.010: code a1=7.271056e-15-8.527048e-08j
+                 教材 a1=0.000000e+00-8.527132e-08j  rel=9.77e-06  Im同号=True
+  m=1.2 x=0.020: code a1=4.653203e-13-6.821439e-07j
+                 教材 a1=0.000000e+00-6.821705e-07j  rel=3.91e-05  Im同号=True
+  判读: rel<~1e-2(x^5 修正量级) 且 Im 同号 => xi 用 +i y 正确, 时谐 e^{-iwt} 对。
+======================================================================
+P7: xi 符号翻转注入对照 — 若代码误用 h=j-i y, a_l 应取共轭 (Rayleigh 符号反)
+  code            a1 = 2.460662e-12-1.568650e-06j
+  +i y (正确)     a1 = 2.460662e-12-1.568650e-06j
+  -i y (错误对照) a1 = 2.460662e-12+1.568650e-06j  <- Im 号翻转
+  code == +i y ? True;  code == conj(-i y 分支)? True
+  判读: code 与 +i y 分支逐位一致 => 代码确用正确 xi 符号; 错误分支 Im 反号可鉴别。
+======================================================================
+P2: 负 eps 域 m 纯虚两 sqrt 分支哪支数值有限 (eps=-10, q_e=10, l=3)
+  m 主值(Im>=0) = 0.0000+3.1623j ; 另一分支 = -0.0000-3.1623j
+  Im m>=0 (主值): m*x=0.000+31.623j  psi_3(mx)=2.233e+13+0.000e+00j  |psi|=2.233e+13  finite=True
+  Im m<0 (错分支): m*x=0.000-31.623j  psi_3(mx)=2.233e+13+0.000e+00j  |psi|=2.233e+13  finite=True
+  代码 mie_ab(l=3,m=主值,x=10): a=5.719818e-01+4.947915e-01j b=3.946568e-01-4.887768e-01j  finite=True
+  判读: Im m>=0 时 j_l(mx) 内含 e^{-Im(mx)... } 有界; Im m<0 指数发散。代码 _refractive_index
+        直接收敛 complex(m), 分支由上游 crosscheck/solver 的 sqrt(主值) 决定 -> 见结论。
+======================================================================
+P3: 负 eps 角点系数量级 (spec 称 |分子|~5e14 仍在 float64 安全范围)
+  l=3 eps=-10.0 q_e=10.0: a=5.7198e-01+4.9479e-01j b=3.9466e-01-4.8878e-01j finite=True  |a-a_ak|=1.11e-16
+  l=3 eps=-10.0 q_e=8.0: a=7.0420e-01-4.5640e-01j b=3.4353e-01+4.7489e-01j finite=True  |a-a_ak|=0.00e+00
+  l=1 eps=-10.0 q_e=10.0: a=1.2831e-01+3.3444e-01j b=8.6799e-01-3.3850e-01j finite=True  |a-a_ak|=5.55e-17
+  l=2 eps=-10.0 q_e=10.0: a=7.1604e-01-4.5092e-01j b=2.9911e-01+4.5787e-01j finite=True  |a-a_ak|=0.00e+00
+  raw @ l=3 corner: |psi_3(mx)|=2.233e+13 |psi'_3(mx)|=2.247e+13 (float64 max ~1.8e308)
+  判读: 系数有限且 float64 远未溢出 => 负 eps 域数值可用。
+======================================================================
+P4: 极点/退化点行为 (分母模长 -> 0, graceful?)
+  m=0j: a=(nan+nanj) b=(nan+nanj) (finite a=False)
+  m=(1e-08+0j): a=(0.045351286587159215+0.20807341827357131j) b=(0.00029602674446570047+0.01720288093989671j) (finite a=True)
+  扫描 l=1 TM eps in [-9,14] q_e in (0,3] 找分母最小模长点:
+  最小 |a_den| = 1.871e-03 @ eps=-2.025 q_e=0.094
+  该点 a_1=1.8616e-01-3.8924e-01j (|a|=4.315e-01)  finite=True
+  判读: 分母最小模长与是否静默给非物理值。scattering 无 try/except, 极点将得 inf/nan(可接受),
+        但绝不 silently 返回有限错值 —— 看上面是否出现异常小分母配异常大 |a|。
+======================================================================
+P5: T2 是否伪独立 — 用 AST 解析 akimov_coeffs 真实 import (排除 docstring 假阳)
+  AST 真实 import 语句: [('from', '__future__', ['annotations']), ('from', 'scipy.special', ['spherical_jn', 'spherical_yn'])]
+  真实 import 依赖 scattering? False  (docstring 里提及不算)
+  真实代码调用 mie_ab? False
+  l=2 eps=-3.0 q_e=1.5: |BH-Ak|=1.11e-16 |BH-3rd(xi=psi-i chi)|=0.00e+00
+  l=3 eps=5.0 q_e=4.0: |BH-Ak|=0.00e+00 |BH-3rd(xi=psi-i chi)|=0.00e+00
+  l=1 eps=-8.0 q_e=9.0: |BH-Ak|=5.55e-17 |BH-3rd(xi=psi-i chi)|=0.00e+00
+  判读: 无 import 且三条独立路径(BH / Akimov 显式 q 因子 / xi=psi-i*chi 形式)一致 => 真独立。
+======================================================================
+P6: 大 l 行为 (远超 Wiscombe nmax), 看 evanescent 高阶是否 graceful
+  x=5.0 Wiscombe nmax=14; 探测 l 直到远超:
+    l=14: a=6.725e-22-2.593e-11j b=6.052e-24-2.460e-12j finite=True
+    l=24: a=3.867e-57-6.219e-29j b=4.146e-60-2.036e-30j finite=True
+    l=54: a=1.882e-199-4.338e-100j b=8.400e-204-2.898e-102j finite=True
+    l=94: a=0.000e+00-1.464e-217j b=0.000e+00-3.279e-220j finite=True
+  判读: 高阶 a_l 应 ->0 或渐小/underflow, 不得爆 inf/nan 于收敛区内 (l<nmax)。
+======================================================================
+P8: a_l/b_l 是否为 m 的偶函数 (决定负 eps 域 sqrt 分支选择是否影响系数)
+    解析: psi_l(-z)=(-1)^{l+1}psi_l(z), psi'_l(-z)=(-1)^l psi'_l(z)
+    => a_l(-m)=[(-1)^l 分子]/[(-1)^l 分母]=a_l(m). 若成立, 主值/负分支等价。
+  l=1 eps=-10.0 q_e=10.0: |a(+m)-a(-m)|=6.21e-17 |b(+m)-b(-m)|=0.00e+00
+  l=2 eps=-5.0 q_e=3.0: |a(+m)-a(-m)|=1.11e-16 |b(+m)-b(-m)|=7.85e-17
+  l=3 eps=-10.0 q_e=8.0: |a(+m)-a(-m)|=0.00e+00 |b(+m)-b(-m)|=1.76e-16
+  l=1 eps=5.0 q_e=2.0: |a(+m)-a(-m)|=0.00e+00 |b(+m)-b(-m)|=0.00e+00
+  l=3 eps=-2.0 q_e=1.07: |a(+m)-a(-m)|=0.00e+00 |b(+m)-b(-m)|=0.00e+00
+  max |系数(+m)-系数(-m)| = 1.76e-16
+  判读: ~0 => a_l,b_l 是 m 偶函数, 负 eps 域 sqrt 主值分支选择不影响系数值,
+        消解 spec 关于'分支取错发散'的顾虑(真发散仅当 |Im(mx)|>~700 溢出, Fig3 域内 <40)。
+======================================================================
+END probes

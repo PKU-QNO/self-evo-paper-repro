@@ -40,6 +40,21 @@
 
 **当前状态**：Gate2 已放行，**下一步 main-agent 进 step04**（BH 主源推导 + `code/scattering.py`，T2 先行 → Gate3 用户核公式）。step04 放行 prompt 已落盘 `.work/.todo/.../STEP04-放行prompt.md`。剩余框架遗留：C1 残留收口 + 记忆分层扶正（均待跑通后）。
 
+### step04（T1+T2）+ Gate3（2026-07-05）
+
+**step04 完成**：sub-agent 产 7/7 硬交付（main 独立复校）——`code/scattering.py`（BH 核 160 行）+ `akimov_coeffs.py`（67）+ `crosscheck_bh_vs_akimov.py`（148）+ derivation.md + verifier_log + 8 字段报告 + memento-cache（回灌 id 9ce51b69）。
+- **Layer1 验证**：能量守恒 PASS（rel 0.000e+00）、Rayleigh PASS（斜率 4.0001）、实 m 无耗 PASS（σ_abs/σ_ext=1.29e-16）、**大尺寸 FAIL**（max$|Q_{ext}-2|$=0.171 @ x=50）。
+- **T2 交叉验证 PASS**（blocker 解除）：BH vs Akimov 3300 点 max$|\Delta a|$=2.2e-15、max$|\Delta b|$=4.8e-16 ≪ 1e-12，0 极点。
+- main 机械封顶 result_class=`diagnostic_only`（Layer1 一条 FAIL），不向上包装——口径正确。
+
+**Gate3 通过**（optics_agent CC 独立复算 + 执行 verifier 修复，落盘 `GATE3-决定.md`）：
+- **(a) BH 公式核对 ✅**：CC 对教材 BH §4.4 逐项核 $a_l/b_l$ + 记号/导数/时谐，全一致；T2 双路径 2e-15 是强证据。
+- **(b) 大尺寸 FAIL = verifier 设计缺陷，非实现 bug**：CC 独立复算确认 $Q_{ext}\to2$ 对无损 $m=1.5$ 慢收敛（$x=1000$ 才 0.014）、**弱阻尼压不掉主偏离**（$m=1.5+0.1i$ 在 $x=200$ 仍 0.057）。→ 否 A（勉强过+算力灾难）/B（削判别力）/D（正确实现被扣 diagnostic_only=假阴性）。
+- **CC 已改 verifier 为趋势判据**（治本，`check_large_size_limit.py`）：$Q_{ext}$ 单调趋 2 + 末点 x=800 达 0.05。**双向验证**：正确实现 PASS（0.0163）、漏 $b_l$ FAIL（0.99）、系数×0.5 FAIL（0.49）。verification.md 补适用条件（双写）。另两 Layer1 回归 PASS。
+- **元**：外部审查 R4/§2.10「verifier 也要被验证」首个实锤——本次 verifier **太严（假阴）**。`.human` verification.md 的"Not applicable"栏本就写了此情形，`.claude` 脚本没落实=declared-vs-actual 又一例。
+
+**当前状态**：Gate3 已放行。**下一步 main-agent 重跑四个 Layer1 verifier（新版应全 PASS）→ result_class 提升 diagnostic_only→simulation_completed（物理成功仍需 Layer3）→ 进 step05 对抗式审查**。不进 T3。放行 prompt 落盘 `.work/.todo/.../STEP05-放行prompt.md`。
+
 ---
 
 ## 决策全账本（用户没时间盯对话 → 所有建议/裁决/落点在此，读此即可恢复，不必翻对话）
@@ -80,10 +95,31 @@
 - **用户要求**：WORK_LOG 变文件夹 = 目录总览（原风格）+ 多阶段详细记录（从阶段十二起）+ 引用文件。
 - **落点**：顶层 `WORK_LOG.md` 保留为总览+阶段摘要表+指针（旧引用不断）；`WORK_LOG/00-历史存档...`（全文快照）+ `WORK_LOG/12-...`（本文件）+ `WORK_LOG/README.md`。
 
+### D-07 Gate3 (a) BH 公式核对（2026-07-05）
+- **CC 建议/核对**：对教材 BH §4.4 逐项核 $a_l/b_l$ + 记号/导数/时谐，全一致；T2 双路径 2e-15 是实现正确的强证据。
+- **用户裁决**：✅ 通过（你委托 CC 核，"你来吧"）。
+- **落点**：`GATE3-决定.md` (a)。
+
+### D-08 Gate3 (b) 大尺寸 verifier FAIL 处理（2026-07-05）
+- **背景**：Layer1 大尺寸 verifier FAIL（$|Q_{ext}-2|$=0.171@x=50），main 诊断为 verifier 设计缺陷非实现 bug，给 A/B/C/D 四选项。
+- **CC 建议**：独立复算否掉全部四选项——A 勉强过靠运气+算力灾难、B 削判别力、C 弱阻尼压不掉慢收敛主偏离、D 假阴性扣正确实现。改为**趋势判据**（$Q_{ext}$ 单调趋 2 + 末点达标），双向验证保判别力。
+- **用户裁决**：✅ "你来吧"（授权 CC 直接改 `.claude/skills` verifier）。
+- **落点**：`check_large_size_limit.py`（趋势判据，.claude）+ `verification.md` 1.5 适用条件（.claude+.human 双写）+ `GATE3-决定.md` (b)。CC 已实测双向验证 PASS/FAIL。
+
+### D-09 Gate4 Fig3 复现最终误差核对（2026-07-05）
+- **背景**：step05-08 一路自动跑完（对抗审查/求根/出图/数字化/Layer3 对比）。Layer3 卡边界：全局 median 0.00746✅/p95 0.04258❌；nr 六面板全达标，sr 5/6 面板 p95 超标（0.05-0.13）。main 给选项 1（接受，倾向）/2（放宽阈值）/3（加密重测）。
+- **CC 独立审计**：用 Gate3 验证过的 `scattering.py` **完全绕开 SEPR `fig3_loci.py`** 独立重新求 sr 根，与 CSV 逐点对比 **Δ=0.0000**（TM l1/l2、TE l2 多切片，几十根全 0）→ 复现曲线数学正确、无画错，超标确系数字化读图误差。**纠正 main 两处转述漂移**：①"负 ε 陡区"实为正大 ε(≈14.6)；②"中位只略超"只对一半（TM 三面板 sr 中位也超）。
+- **CC 建议**：选项 1 接受 + 3 强制条件（result_class=partial_physical_match；报告如实写诚实边界含 TM 中位也超+方向性检验未完成；**不改阈值**否决选项2=verifier gaming）。否选项3（边际收益低）。
+- **用户裁决**：✅ 采纳（"你帮我做以上事情"）。
+- **落点**：`GATE4-决定.md`；memento `750b5372`；benchmark.yaml 待 step10 标 sr 超标 known/accepted。
+- **未做透**：数字化偏差单/双侧方向性检验（CC 逐点求根太慢中止，独立求根 Δ=0 已决定性故不阻塞）。
+
 ### 待你有空时可回看/可推翻的项（都已落，不阻塞）
 - Layer3 阈值是 SEPR 自定、无文献先例 → 跑完据实调，别当权威门槛卡后续论文。
 - 记忆分层扶正的子问题：main 回灌逐条照搬 vs 只提炼 case 级结论（CC 倾向后者防膨胀）→ 攒 2-3 case 看真实膨胀再定。
 - C1 残留（sub→leaf 身份仍 prompt 软约束）→ 跑通后与 hooks 一起收口（审计 N4 登记）。
+- 大尺寸 verifier 趋势判据的末点 x=800/tol 0.05 是 CC 复算定的 → 若后续某论文用强吸收球，此判据不适用（已在 verification.md 标 Not applicable），据实换。
+- Gate4 sr 长尾方向性检验未跑完 → 若要教科书级严谨可补（逐点求根算带符号偏差，判单/双侧）；复现正确性已由 Δ=0 独立证实，非必须。
 
 ---
 

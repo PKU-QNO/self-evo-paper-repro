@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 SEPR 工作区从创建至今的**目录总览**（一句话定位/路径/状态/文件结构/核心设计速查/文档索引）。**多阶段详细记录见 `WORK_LOG/`**（阶段十二起每阶段独立成文；文件夹化前全文快照在 `WORK_LOG/00-历史存档-阶段01至12-全文.md`）。供上下文压缩或新开对话时快速恢复。
 > **最后更新**：2026-07-04
-> **当前阶段**：**首次实跑进行中**——Akimov 2401.04146（case `0703-01-akimov-mie-v1`）已过 step01-03 + Gate1 + Gate2；目标图锁定 **Fig3 超辐射/非辐射 loci**，公式主源 BH 教材。**下一步 main-agent 进 step04**（`code/scattering.py` 实现，T2 Akimov 交叉验证先行 → Gate3 用户核公式）。详见 `WORK_LOG/01-akimov-mie-v1.md`。注：OpenCode 双系统已于 2026-07-03 撤销（阶段十一），阶段八/九相关描述已过时。
+> **当前阶段**：**首次实跑收尾中**——Akimov 2401.04146（case `0703-01-akimov-mie-v1`）已过 step01-08 + Gate1/2/3/4。Fig3 复现：CC 独立求根 Δ=0 证实复现曲线正确，超标系数字化读图误差，**result_class = partial_physical_match**（不改阈值、如实标诚实边界）。**下一步 main-agent 收尾 step09→10→11**（自检/双报告/benchmark/capsule/WORK_LOG），step11 后是进 .result 前最后 human gate。详见 `WORK_LOG/01-akimov-mie-v1.md`。注：OpenCode 双系统已于 2026-07-03 撤销（阶段十一），阶段八/九相关描述已过时。
 
 ---
 
