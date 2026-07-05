@@ -26,8 +26,8 @@
 
 ## 输出约定
 
-- 分析报告：`.work/<case>/result_analysis.md`（RMSE+峰位误差+归因+结论）
-- 对比图：`.work/<case>/figs/comparison_*.png`
+- 分析报告：`.work/.todo/{paper}/{case}/result_analysis.md`（RMSE+峰位误差+归因+结论）
+- 对比图：`.work/.todo/{paper}/{case}/figs/comparison_*.png`
 
 ## 常见坑
 

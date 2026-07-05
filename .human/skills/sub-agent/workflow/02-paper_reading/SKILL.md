@@ -46,9 +46,9 @@
 
 ## 输出约定
 
-- 理解笔记：`.work/<case>/paper_understanding.md`
-- 参数表：`.work/<case>/parameter_table.md`（值+单位+来源）
-- 缺失信息：`.work/<case>/missing_info.md`
+- 理解笔记：`.work/.todo/{paper}/{case}/paper_understanding.md`
+- 参数表：`.work/.todo/{paper}/{case}/parameter_table.md`（值+单位+来源）
+- 缺失信息：`.work/.todo/{paper}/{case}/missing_info.md`
 
 ## 常见坑
 

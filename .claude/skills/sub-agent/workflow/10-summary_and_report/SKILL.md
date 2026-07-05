@@ -7,20 +7,20 @@
 子 agent 产 4 类文档初稿放沙箱，主 agent 汇总定稿后投到最终目录。
 
 **① 全过程报告**（最详细，给人审查留痕）
-- 草稿：`.work/<case>/full_report_draft.md`
+- 草稿：`.work/.todo/{paper}/{case}/full_report_draft.md`
 - 完整记录每步操作、参数、问题、数值
 
 **② 简报**（给老师/PI 一页摘要）
-- 草稿：`.work/<case>/brief_draft.md`
+- 草稿：`.work/.todo/{paper}/{case}/brief_draft.md`
 - 论文名/目标/复现 level/关键数字/一句话结论
 
 **③ SKILL 更改建议**
-- 草稿：`.work/self-iteration/<paper>.skill-suggestion-draft.md`
+- 草稿：`.work/.todo/{paper}/{case}/self-iteration/<paper>.skill-suggestion-draft.md`
 - 技能缺陷/改进点，带 tier、适用边界、来源 case
 - 只增不删
 
 **④ 蓝图建议**
-- 草稿：`.work/self-iteration/<paper>.blueprint-suggestion-draft.md`
+- 草稿：`.work/.todo/{paper}/{case}/self-iteration/<paper>.blueprint-suggestion-draft.md`
 - 上 Magnus 的蓝图设计方案，纯 Python 则注明"本次无需蓝图"
 
 ### benchmark 追加
@@ -29,7 +29,7 @@
 - append-only，不覆盖
 
 ### skill 改进草稿（如需）
-- 走沙箱：`.work/self-iteration/<skill>.skill.yaml`
+- 走沙箱：`.work/.todo/{paper}/{case}/self-iteration/<skill>.skill.yaml`
 - 用 `skill-creator/scripts/skill_to_yaml.py` 导出现有 skill 改
 - 草稿不许删
 - 不直接改 `.claude/skills/`（主 agent 同步）
@@ -46,12 +46,12 @@
 
 ## 输出约定
 
-- 全过程报告草稿：`.work/<case>/full_report_draft.md`
-- 简报草稿：`.work/<case>/brief_draft.md`
-- SKILL 更改建议草稿：`.work/self-iteration/<paper>.skill-suggestion-draft.md`
-- 蓝图建议草稿：`.work/self-iteration/<paper>.blueprint-suggestion-draft.md`
-- benchmark 草稿：`.work/self-iteration/benchmark_<case>.yaml`
-- skill 改进草稿：`.work/self-iteration/<skill>.skill.yaml`（如需）
+- 全过程报告草稿：`.work/.todo/{paper}/{case}/full_report_draft.md`
+- 简报草稿：`.work/.todo/{paper}/{case}/brief_draft.md`
+- SKILL 更改建议草稿：`.work/.todo/{paper}/{case}/self-iteration/<paper>.skill-suggestion-draft.md`
+- 蓝图建议草稿：`.work/.todo/{paper}/{case}/self-iteration/<paper>.blueprint-suggestion-draft.md`
+- benchmark 草稿：`.work/.todo/{paper}/{case}/self-iteration/benchmark_<case>.yaml`
+- skill 改进草稿：`.work/.todo/{paper}/{case}/self-iteration/<skill>.skill.yaml`（如需）
 - 模板参考：`main-agent/references/main_report_template.md`
 
 ## 常见坑
@@ -78,14 +78,14 @@
 
 ### 输入路径
 - 论文原文：`.paper/{paper}` 或 spawn 指令指定 PDF。
-- 本 case 工作区：`.work/.todo/{paper}/{case}/{timestamp}/` 或 spawn 指令指定路径。
+- 本 case 工作区：`.work/.todo/{paper}/{case}/` 或 spawn 指令指定路径。
 - 子报告读取：`.work/.sub-report/` 或 `.work/.evolution/{timestamp}/sub-reports/`。
 - 待治理输入：`toEflow/`、`.work/.todo/`、`.E-history/`（仅自迭代步骤）。
 - 缺路径时先在报告写 `blocked_by: missing_input_path`，不要猜。
 
 ### 输出路径
 - 主报告或子报告目录：`.work/.sub-report/`。
-- 本步中间产物：`.work/.todo/{paper}/{case}/{timestamp}/10-summary_and_report/` 或 `.work/.evolution/{timestamp}/10-summary_and_report/`。
+- 本步中间产物：`.work/.todo/{paper}/{case}/10-summary_and_report/` 或 `.work/.evolution/{timestamp}/10-summary_and_report/`。
 - 草稿文件：只写 `.work/` 沙箱；正式 `.claude/skills/` 和 `.human/skills/` 只能在 human gate 后同步。
 - 输出文件名带 `10-summary_and_report-{timestamp}`，避免覆盖。
 

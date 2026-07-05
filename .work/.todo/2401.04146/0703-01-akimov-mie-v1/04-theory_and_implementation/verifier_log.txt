@@ -1,0 +1,37 @@
+==================================================================
+verifier_log.txt — step04 T1+T2 原始 stdout
+case: 0703-01-akimov-mie-v1 | timestamp: 20260704-01
+生成命令: 各脚本 PYTHONUTF8=1 python <script> 2>&1
+生成时间: 2026-07-04T15:25:14Z UTC
+==================================================================
+
+### [1/5] check_energy_conservation.py (Layer1.1) ###
+PASS energy_conservation: max relative error 0.000e+00 (worst: )
+exit_code=0
+
+### [2/5] check_rayleigh_limit.py (Layer1.2) ###
+PASS rayleigh_limit: fitted slope 4.0001 (expected 4.0, tol 0.01)
+exit_code=0
+
+### [3/5] check_large_size_limit.py (Layer1.3) ###
+FAIL large_size_limit: max |Q_ext - 2| 0.1711 at x=50.0, tol 0.05
+exit_code=1
+
+### [4/5] crosscheck_bh_vs_akimov.py (T2 Layer2-C) ###
+确定性网格点数=3000 (要求>=1000), 随机点数=300 (要求>=300)
+[deterministic] points=3000 used=3000 skipped(pole)=0
+[deterministic] max|da|=2.221e-15  max|db|=4.408e-16
+[deterministic] worst @ l=2 eps=-2.0000 qe=1.0705 diff=2.221e-15
+[random] points=300 used=300 skipped(pole)=0
+[random] max|da|=4.775e-16  max|db|=4.775e-16
+[random] worst @ l=1 eps=-2.0855 qe=0.6698 diff=4.775e-16
+------------------------------------------------------------
+TOTAL max|da|=2.221e-15  max|db|=4.775e-16  tol=1e-12
+TOTAL skipped(pole, |den|<1e-09)=0
+PASS crosscheck_bh_vs_akimov: 两式数值等价
+exit_code=0
+
+### [5/5] scattering.py self-test (实 m 无耗 σ_abs≈0) ###
+dielectric x=1: Cext=2.150976e-01 Csca=2.150976e-01 Cabs=-2.776e-17
+  |Cabs|/Cext = 1.290e-16 (应 ~machine eps)
+exit_code=0

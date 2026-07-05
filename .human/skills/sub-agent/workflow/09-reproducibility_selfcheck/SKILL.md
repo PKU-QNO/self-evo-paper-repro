@@ -18,7 +18,7 @@
 
 ## 输出约定
 
-- 自检报告：`.work/<case>/reproducibility_check.md`
+- 自检报告：`.work/.todo/{paper}/{case}/reproducibility_check.md`
 
 ## 常见坑
 

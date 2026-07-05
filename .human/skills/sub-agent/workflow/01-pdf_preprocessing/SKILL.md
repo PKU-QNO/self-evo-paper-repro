@@ -22,11 +22,11 @@
 
 ## 输出约定
 
-- 正文：`.work/<case>/paper_text.md`
-- 公式：`.work/<case>/formulas.md`（编号+原文+LaTeX+来源页码）
-- 图：`.work/<case>/figures.md`（编号+caption+类型[数据图/示意图]+路径）
-- 表：`.work/<case>/tables.md`（编号+caption+数值逐字）
-- 图文件：`.work/<case>/figs/`
+- 正文：`.work/.todo/{paper}/{case}/paper_text.md`
+- 公式：`.work/.todo/{paper}/{case}/formulas.md`（编号+原文+LaTeX+来源页码）
+- 图：`.work/.todo/{paper}/{case}/figures.md`（编号+caption+类型[数据图/示意图]+路径）
+- 表：`.work/.todo/{paper}/{case}/tables.md`（编号+caption+数值逐字）
+- 图文件：`.work/.todo/{paper}/{case}/figs/`
 
 ## 常见坑
 

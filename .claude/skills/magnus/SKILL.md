@@ -3,8 +3,9 @@ name: magnus
 description: Magnus HPC execution for SEPR — blueprint submission, job monitoring, resource management on Gustation cluster. Use when the task involves running blueprints on Magnus (SLURM framework, max 973G RAM / 256G per task, large disk, 128 cores), submitting/monitoring jobs, or managing HPC resources for COMSOL/simulation work.
 ---
 
-# Magnus Skill（空白，待后期英文 prompt-engineered）
+# Magnus Skill（占位骨架——⚠ 预制脚本不存在，不可依赖；Mie 纯 Python 阶段不用本 skill）
 
+> **⚠ declared-vs-actual 警示（2026-07-04）**：下方"预制脚本"是规划，一个都不存在（`scripts/*.py` 未落地）。sub-agent 不得假设脚本存在；SEPR 真要提交远程作业时再实现（Mie 阶段 1-7 纯 Python 解析，大概率不触发）。实际 Magnus 操作参考 `.human/skills/optics-magnus-platform/`。
 > 现阶段是占位骨架。详细中文设计稿在 `.human/skills/optics-magnus-platform/` 和 `optics-magnus-artifacts/`（已从 optics_agent 复制）。后期整合成英文 prompt-engineered 版。
 > 这个 skill 给 sub-agent 用，处理 Magnus 蓝图提交和作业监控（workflow step 06 run_and_monitor 走 Magnus 时）。
 
@@ -49,11 +50,11 @@ description: Magnus HPC execution for SEPR — blueprint submission, job monitor
 - 单点复跑命令/入口和整图复现入口
 - 失败点、跳过点和 retry fingerprint
 
-## 预制脚本（待填）
+## 预制脚本（**全部不存在，待实现，不可依赖**）
 
-- `scripts/submit_magnus.py` — 蓝图提交模板
-- `scripts/monitor_job.py` — 作业状态查询
-- `scripts/collect_results.py` — 结果回传
+- `scripts/submit_magnus.py` — 蓝图提交模板（未实现）
+- `scripts/monitor_job.py` — 作业状态查询（未实现）
+- `scripts/collect_results.py` — 结果回传（未实现）
 
 ## 安全红线（待填）
 

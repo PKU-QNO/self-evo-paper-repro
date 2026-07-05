@@ -137,7 +137,8 @@ SEPR 明确只允许三层委派：`main/evolution -> sub/sub-E -> leaf`。第 3
   └── mie/             11 篇 Mie 论文 PDF
 .work/         agent 工作沙箱（软约束）
   ├── .sub-report/    子 agent 完整报告统一放这里
-  ├── .todo/<paper>/  单论文 workflow 过程文件 + skill 草稿缓冲
+  ├── .todo/{paper}/{case}/  单论文 workflow 过程文件 + skill 草稿缓冲（canonical，2026-07-04 收敛；case 名含日期版本如 0703-01-akimov-mie-v1，无额外 timestamp 层；skill 草稿在其下 self-iteration/）
+  ├── .result/<case>/capsule.md  W-flow step11 强制产出（100% fire），E-flow step01 唯一输入（2026-07-04 补 A1 生产侧，产/消契约闭合）
   ├── .evolution/<timestamp>/  evolution 进行中工作区
   └── memento-cache/
 toEflow/       workflow→evolution 缓冲（只增不删）
@@ -147,12 +148,36 @@ toEflow/       workflow→evolution 缓冲（只增不删）
   ├── 01-evolution-report.md
   └── 02-evolution-report.md
 .result/       最终交付区，主 agent 工作结束前从 .work 复制有用内容过来
-todo.md        全局日志，每次 workflow/Eflow 结束前填一段
+todo.md        全局日志（临时缓冲：每次 run 填一段，进自迭代 → 迭代后归档/删减）
+WORK_LOG.md    整体大框架总览（永不归档、永不删减；只增不改历史）
+WORK_LOG/      多篇复现的分文件详细日志
+  ├── README.md          文件夹索引 + 命名/维护约定
+  ├── _TEMPLATE.md       每篇复现日志的空模板
+  ├── 00-历史存档-*.md    文件夹化前全文快照（底本）
+  └── <NN>-<papername>-v<N>.md   一篇复现一文件（多次复现 → 多文件，version 由用户第一句话给）
 papers/        -> optics_agent/papers (junction)
 reproduction_test/ -> optics_agent/reproduction_test (junction)
 ```
 
 论文命名规则：`MMDD-NN-papername-vN`，如 `0629-01-akimov-mie-v1`
+
+## WORK_LOG 维护规范（强制，main-agent 负责）
+
+**定位（与 todo 分工，不重叠不互抄）**：
+- `todo.md` = **临时缓冲**：待进自迭代的需求，迭代后归档/删减。机器索引口径，一行一 run。
+- `WORK_LOG` = **整体大框架历史**：**永不归档、永不删减、只增不改历史**。人看的叙事层。
+- 两者分工写死：todo 记"待办/状态"，WORK_LOG 记"发生了什么+为什么这么决定"。数据/报告不重抄，WORK_LOG **只引用** capsule / run_manifest / `.result` / gate 决定文件的路径。
+
+**结构**：
+- 顶层 `WORK_LOG.md` = 总览（一句话定位/路径/当前状态/文件结构/核心设计速查/文档索引）+ **阶段/run 摘要表**（每 run 一行 + 指向详情文件的指针）。
+- `WORK_LOG/<NN>-<papername>-v<N>.md` = **一篇复现一文件**，按论文分。同一篇复现多次 → 分多文件（`-v1`/`-v2`…），**version 号由用户在第一句话给定，agent 不猜、不自造命名**。
+- 文件内部按"日期 + 会话/step 批次"**追加条目**（形如 `### step0X + GateN（YYYY-MM-DD）`），累积不覆盖。模板见 `WORK_LOG/_TEMPLATE.md`。
+
+**谁写、何时写（main-agent 固定动作）**：
+1. **每次新上下文开工时**：先读顶层 `WORK_LOG.md`（恢复大框架）；若继续某篇复现，再读该篇 `WORK_LOG/<...>.md`。此为身份恢复的一部分。
+2. **每个会话结束前 / 每个报告点（step11、以及每个 human gate 停机前）**：向该篇 `WORK_LOG/<...>.md` **增量追加**一段带日期的条目（做了什么、关键决策+为什么、引用产物路径、下一步/停机点），并在顶层摘要表更新该 run 的行。**只增不改已有历史**。
+3. **决策台账**：凡有 CC 建议 / 用户裁决 / gate 结论，追加到该篇的"决策台账"节（记：建议→裁决→落点文件+memento id），使"只读 WORK_LOG 即可恢复全部决策，不必翻对话"。
+4. step11 验收清单含"WORK_LOG 已增量更新"，缺则本步不算完成（同 capsule/run_manifest 口径，不靠自觉）。
 
 ## run manifest（强制）
 

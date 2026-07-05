@@ -6,7 +6,7 @@
 
 ## 输出要求
 
-- 审查报告（`.work/<case>/theory_check.md`）：
+- 审查报告（`.work/.todo/{paper}/{case}/theory_check.md`）：
   - 公式逐条核对（对照教材）
   - 代码逐条核对（对照公式）
   - 发现的问题清单
@@ -40,8 +40,8 @@
 ```
 【第 05 步：theory_check】
 【任务】对抗式审查推导和代码。双向归因：物理→公式→代码。
-【输入】.work/{case}/derivation.md / code/*.py / tests/test_*.py
-【输出】.work/{case}/theory_check.md（含问题清单和修正建议）
+【输入】.work/.todo/{paper}/{case}/derivation.md / code/*.py / tests/test_*.py
+【输出】.work/.todo/{paper}/{case}/theory_check.md（含问题清单和修正建议）
 【要传达的约定】审查要对抗式，不是确认式，假设有错去找错；双向归因（物理→公式→代码每一步能对上）；问题分级：致命/重要/轻微；不能因为"能跑"就放过。
 【必须回答的决策问题】1.公式和教材一致吗？哪些有出入？2.代码实现的是公式说的吗？有没有偷工减料？3.有没有"正确解了错题"的风险？4.修正后可以进 step 06 运行了吗？
 【人工 gate】③——关键公式推导后停下来，让用户对着教材核 $a_n, b_n$。

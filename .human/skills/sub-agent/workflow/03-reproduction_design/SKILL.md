@@ -28,8 +28,8 @@
 
 ## 输出约定
 
-- spec：`.work/<case>/formalization.yaml`
-- 拆分计划：`.work/<case>/repro_plan.md`
+- spec：`.work/.todo/{paper}/{case}/formalization.yaml`
+- 拆分计划：`.work/.todo/{paper}/{case}/repro_plan.md`
 
 ## 常见坑
 

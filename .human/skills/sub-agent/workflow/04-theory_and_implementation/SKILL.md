@@ -26,9 +26,9 @@
 
 ## 输出约定
 
-- 推导：`.work/<case>/derivation.md`（含公式来源页码）
-- 代码：`.work/<case>/code/*.py`
-- 测试：`.work/<case>/tests/test_*.py`
+- 推导：`.work/.todo/{paper}/{case}/derivation.md`（含公式来源页码）
+- 代码：`.work/.todo/{paper}/{case}/code/*.py`
+- 测试：`.work/.todo/{paper}/{case}/tests/test_*.py`
 
 ## 常见坑
 

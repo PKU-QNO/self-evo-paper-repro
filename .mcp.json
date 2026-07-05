@@ -35,11 +35,7 @@
     },
     "memento-mcp": {
       "type": "stdio",
-      "command": "cmd",
-      "args": [
-        "/c",
-        "C:\\Users\\27370\\AppData\\Roaming\\npm\\memento-mcp.cmd"
-      ],
+      "command": "C:\\Users\\27370\\.memento\\memento-claude.cmd",
       "env": {
         "MEMENTO_DATABASE_PATH": "C:\\Users\\27370\\.memento\\memory.db",
         "MEMENTO_DUMMY_KEY": "dummy"

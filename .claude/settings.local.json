@@ -6,14 +6,6 @@
   "permissions": {
     "deny": []
   },
-  "disabledMcpjsonServers": [],
-  "disableBundledSkills": true,
-  "autoMemoryEnabled": false,
-  "claudeMdExcludes": [
-    "C:\\Users\\27370\\Desktop\\project\\CLAUDE.md",
-    "C:\\Users\\27370\\Desktop\\project\\.claude\\CLAUDE.md"
-  ],
-  "disableAllProjectMcpServers": false,
   "enabledMcpjsonServers": [
     "academic-research",
     "arxiv-mcp",
@@ -22,5 +14,13 @@
     "firecrawl",
     "sourcegraph",
     "memento-mcp"
-  ]
+  ],
+  "disabledMcpjsonServers": [],
+  "disableBundledSkills": true,
+  "autoMemoryEnabled": false,
+  "claudeMdExcludes": [
+    "C:\\Users\\27370\\Desktop\\project\\CLAUDE.md",
+    "C:\\Users\\27370\\Desktop\\project\\.claude\\CLAUDE.md"
+  ],
+  "disableAllProjectMcpServers": false
 }

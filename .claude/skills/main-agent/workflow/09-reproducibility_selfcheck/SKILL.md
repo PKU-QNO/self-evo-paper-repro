@@ -6,7 +6,7 @@
 
 ## 输出要求
 
-- 可复现性自检报告（`.work/<case>/reproducibility_check.md`）：
+- 可复现性自检报告（`.work/.todo/{paper}/{case}/reproducibility_check.md`）：
   - 参数微扰测试（改一两个参数，结论稳吗）
   - 独立重跑（清缓存重跑，结果一致吗）
   - 独立实现 + 物理硬约束 + 教材公式 + 论文图量化交叉验证（不同证据链是否支持同一结论）
@@ -38,8 +38,8 @@
 ```
 【第 09 步：reproducibility_selfcheck】
 【任务】排除"瞎猫碰上死耗子"——确认结果可复现、不是凑巧。
-【输入】.work/{case}/code/*.py / data/*.csv
-【输出】.work/{case}/reproducibility_check.md
+【输入】.work/.todo/{paper}/{case}/code/*.py / data/*.csv
+【输出】.work/.todo/{paper}/{case}/reproducibility_check.md
 【要传达的约定】不是跑一遍就完，要主动扰动验证；微扰后结论变了说明不稳定要查；物理直觉复核：人该做的部分留给人工 gate。
 【必须回答的决策问题】1.参数微扰后结论稳吗？哪些参数敏感？2.独立重跑结果一致吗？3.有没有"凑巧对上"的嫌疑？4.可以确认物理复现成功了吗？
 【人工 gate】确认成功时触发关键节点"即将进 .result"问用户。
@@ -59,14 +59,14 @@
 
 ### 输入路径
 - 论文原文：`.paper/{paper}` 或 spawn 指令指定 PDF。
-- 本 case 工作区：`.work/.todo/{paper}/{case}/{timestamp}/` 或 spawn 指令指定路径。
+- 本 case 工作区：`.work/.todo/{paper}/{case}/` 或 spawn 指令指定路径。
 - 子报告读取：`.work/.sub-report/` 或 `.work/.evolution/{timestamp}/sub-reports/`。
 - 待治理输入：`toEflow/`、`.work/.todo/`、`.E-history/`（仅自迭代步骤）。
 - 缺路径时先在报告写 `blocked_by: missing_input_path`，不要猜。
 
 ### 输出路径
 - 主报告或子报告目录：`.work/.sub-report/`。
-- 本步中间产物：`.work/.todo/{paper}/{case}/{timestamp}/09-reproducibility_selfcheck/` 或 `.work/.evolution/{timestamp}/09-reproducibility_selfcheck/`。
+- 本步中间产物：`.work/.todo/{paper}/{case}/09-reproducibility_selfcheck/` 或 `.work/.evolution/{timestamp}/09-reproducibility_selfcheck/`。
 - 草稿文件：只写 `.work/` 沙箱；正式 `.claude/skills/` 和 `.human/skills/` 只能在 human gate 后同步。
 - 输出文件名带 `09-reproducibility_selfcheck-{timestamp}`，避免覆盖。
 

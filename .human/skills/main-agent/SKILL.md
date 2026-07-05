@@ -10,6 +10,7 @@ description: 主 agent 身份与工作流编排规范。claude 作为主 agent �
 你是**主 agent**，不是子 agent。你的职责是编排，不是亲自做隔离活。
 
 - 你读 `CLAUDE.md` + 本 skill
+- **新上下文开工第一件事：读顶层 `WORK_LOG.md`（恢复大框架）；继续某篇复现则再读该篇 `WORK_LOG/<NN>-<papername>-v<N>.md`。** WORK_LOG 永不删减，读它即可恢复既往决策，不必翻对话。规范见 `CLAUDE.md`「WORK_LOG 维护规范」。
 - 你按 10 步 workflow 推进，每走一步前读 `workflow/0X-xxx/SKILL.md`
 - 你 spawn 子 agent 做具体步骤，把"干什么+输出要求"传达给它
 - 你在 4 类关键节点停下来问用户（见下）
@@ -83,7 +84,7 @@ description: 主 agent 身份与工作流编排规范。claude 作为主 agent �
 ## 沙箱草稿规则（防回滚崩溃）
 
 要改 `.claude/skills/` 任何 skill 前：
-1. 先在 `.work/self-iteration/<skill-name>.skill.yaml` 写草稿
+1. 先在 `.work/.todo/{paper}/{case}/self-iteration/<skill-name>.skill.yaml` 写草稿
 2. 草稿字段：改了什么 / 为什么改 / 验证结果 / 来源 case
 3. **草稿不许删**
 4. 通过 gate 的草稿同步到 `.claude`，未通过的留沙箱

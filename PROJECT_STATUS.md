@@ -82,6 +82,7 @@ self-evo-paper-repro/
 - 用户说“复现 XXX.pdf”时，入口身份选择 `main-agent`，加载复现编排 skill 后进入 10 步 workflow。
 - 复现中保留 4 个人工 gate：参数核对、formalization 核对、公式核对、误差核对。
 - PyMieScatt 已弃用，Mie 结果用 3 层物理检验：物理硬约束、Rayleigh/大尺寸极限退化、论文图量化对比。
+- **首跑状态（2026-07-04）**：Akimov case `0703-01-akimov-mie-v1` 已完成 step01-02，产物在 `.work/.todo/2401.04146/0703-01-akimov-mie-v1/`。首跑 6 条信号及修复批次见 `WORK_LOG.md` 阶段十二（papers.md 契约重写 / A2 路径收敛为 `.work/.todo/{paper}/{case}/` / spawn 硬交付红线 / step02-03 目标图条款 / MCP 预检）。目标图从 step02 候选（Fig3 loci / Fig5(c)(f) $|a_1|,|b_1|$ / Fig6）经 gate 选定——**不采用预写计划里的 $Q_{sca}(x)$ 图（论文中不存在）**。
 
 ## 8. 给未来 agent 的快速入口
 
@@ -89,5 +90,5 @@ self-evo-paper-repro/
 - 再读 `.human/DESIGN.md`，理解完整项目计划、关键机制和设计依据。
 - 根据用户意图选择身份：复现新论文选 `main-agent`，跑自迭代选 `evolution-agent`，局部调试不进 workflow。
 - 子 agent 被 spawn 后，先跑 `skill-print.py` 获得技能列表，再按任务单执行。
-- 每个 agent 开始前搜 memento，结束前更新记忆；子 agent 的记忆要求由 spawn 指令显式写入。
+- 每个 agent 开始前先做 MCP 预检（确认 memento 工具真实可调用；不可用则显式声明降级、落 `.work/memento-cache/`，禁静默假装搜过），再搜 memento，结束前更新记忆；子 agent 的记忆要求由 spawn 指令显式写入。
 - 不污染 `.paper/`，不直接写 `.result/`，高风险操作和关键 gate 必须停下来问用户。

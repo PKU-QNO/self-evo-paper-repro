@@ -1,8 +1,8 @@
 # SEPR 工作日志（完整交接文档）
 
-> **用途**：本文档是 SEPR 工作区从创建到 2026-06-30 的完整工作记录。供上下文压缩或新开对话时快速恢复。
-> **最后更新**：2026-06-30
-> **当前阶段**：设计阶段 + 风险审查 + 16 条落地 + 双系统适配（Claude Code + OpenCode）+ 子 agent 深度/工具限制全部完成。待启动 Mie 第一阶段。
+> **用途**：本文档是 SEPR 工作区从创建至今的**目录总览**（一句话定位/路径/状态/文件结构/核心设计速查/文档索引）。**多阶段详细记录见 `WORK_LOG/`**（阶段十二起每阶段独立成文；文件夹化前全文快照在 `WORK_LOG/00-历史存档-阶段01至12-全文.md`）。供上下文压缩或新开对话时快速恢复。
+> **最后更新**：2026-07-04
+> **当前阶段**：**首次实跑进行中**——Akimov 2401.04146（case `0703-01-akimov-mie-v1`）已过 step01-03 + Gate1 + Gate2；目标图锁定 **Fig3 超辐射/非辐射 loci**，公式主源 BH 教材。**下一步 main-agent 进 step04**（`code/scattering.py` 实现，T2 Akimov 交叉验证先行 → Gate3 用户核公式）。详见 `WORK_LOG/01-akimov-mie-v1.md`。注：OpenCode 双系统已于 2026-07-03 撤销（阶段十一），阶段八/九相关描述已过时。
 
 ---
 
@@ -39,85 +39,25 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 
 ---
 
-## 2. 整个工作过程（从头）
+## 2. 整个工作过程（阶段摘要 + 指针）
 
-### 阶段一：workflow 风险评审（optics_agent）
-- 分析 `papers/self-evolution/` 13 个分类 127 篇论文，挖出 R-1~R-49 共 49 条风险，组织成 7 组
-- 合并三份风险文件为一份 `optics_agent/notes/workflow_risk_review-CN.md`
-- 提出 18 条框架修改建议给 `workflow_engine_design-CN.md`
+> **2026-07-04 文件夹化**：完整叙述见 `WORK_LOG/`（详细记录）与 `WORK_LOG/00-历史存档-阶段01至12-全文.md`（文件夹化前全文快照）。本节只留各阶段一句话摘要。**阶段十二起每阶段在 `WORK_LOG/NN-*.md` 有独立详细记录。**
 
-### 阶段二：pivot 到 Mie + 建 SEPR
-- 用户决定暂停 workflow 规划，先做 Mie 复现 Phase 1
-- 建 Mie 复现计划（`reproduction_test/mie/mie_reproduction_plan-CN.md`）+ `optics-mie-reproduction` skill + todolist
-- 验证体系从 4 层改 3 层（物理硬约束→极限退化→论文图量化），三方一致性→两方一致性
-- **PyMieScatt 弃用**（"太机械"），清理 12 个文件
-- 用户决定建独立工作区 SEPR，用 claude 三层子 agent 替代 workflow 状态机
-- 设计 10 步复现 workflow + main agent 第 11 步报告
-- 4 agent 架构：复现（main-agent + sub-agent）+ 自迭代（evolution-agent + sub-E-agent）
+| 阶段 | 一句话 | 详细记录 |
+|------|--------|---------|
+| 一 workflow 风险评审 | 127 篇挖 R-1~R-49，18 条框架建议 | 历史存档 |
+| 二 pivot 到 Mie + 建 SEPR | 暂停 workflow 规划，改 claude 三层子 agent；验证 4 层→3 层；弃 PyMieScatt | 历史存档 |
+| 三 自迭代设计 | ECC 6 改动，5 步自迭代 + 第 6 步报告；.human/.claude 双目录 | 历史存档 |
+| 四 细节设计 | subsubagent 规范、spawn 模版拼接、六维裁决、三级治理 | 历史存档 |
+| 五 落地 + 验证 | toEflow/.E-history/Wflow 4 类输出；quick_validate 通过 | 历史存档 |
+| 六 v3 文献审查 | 94 篇 A-K 分类，5 条最高风险，3 份报告 | 历史存档 |
+| 七 失败防护 + 16 条落地 | 重跑上限/retry fingerprint/资源上限；16 条 P0/P1/P2 全落 | 历史存档 |
+| 八 .claude 详细版 + 双系统 | 4 身份 6465 行；OpenCode 适配 + 三文件同步（后均撤销） | 历史存档 |
+| 九 子 agent 深度+工具限制 | .claude/agents 4 文件 + opencode 6 agent 对齐，leaf 防递归 | 历史存档 |
+| 十 Claude 新能力核验 + V3 加固提案 | 放弃 OpenCode + 分层采纳；hooks 红线提案（未落地） | 历史存档 |
+| 十一 V3 加固基础版落地 | sub-leaf 硬化 + skills 预加载 + OpenCode 撤销（实操 SEPR） | 历史存档 |
+| **十二 Mie 首次实跑 + 首跑信号修复** | Akimov Fig3：step01-03 + 6 信号修复 + Gate1/2 裁决 + 记忆分层发现 | **`WORK_LOG/01-akimov-mie-v1.md`** |
 
-### 阶段三：自迭代设计
-- 调研 ECC（github 222k 星）hook 驱动自动演化，蒸馏 6 条改动
-- 设计 5 步自迭代 workflow + evolution-agent 第 6 步报告
-- `.human/`（人话版中文审查稿）vs `.claude/`（英文 prompt-engineered 执行版）双目录机制
-- claude 隔离配置：git init + claudeMdExcludes + disableBundledSkills + autoMemoryEnabled=false
-
-### 阶段四：细节设计
-- subsubagent 规范（用户不批示，讨论确定）：用调 subagent 的标准方式调，多调防上下文过长，第 3 层不再 spawn
-- spawn 输入模版机制：全局模版（W/E 各一份）+ 每步局部模版 + 主 agent 拼接
-- 一个节点多子 agent 并发（fan-out，独立子任务才并发）
-- 四选一裁决改进（AI4S 适配）：六维裁决（加 Fork/Archive）+ 三级治理（Tier-1/2/3）
-- validate_and_replay 实现：selective replay 层 A/B/C，E-flow 不调 W-flow
-- 记忆要求：每个 agent 开始前搜 memento，结束前更新
-- 子 agent tools 控制：MCP 全量注入，用 allowlist `tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill`
-- 蓝图扫描泛用能力：Annotated 参数 + scan_parameters 字段
-- CLAUDE.md 全规范：全程中文 + Markdown + 公式 `$...$`
-
-### 阶段五：落地 + 验证
-- 建目录：toEflow/ + .E-history/ + todo.md
-- .E-history 报告模板（evolution 第 6 步用）
-- Wflow step10/11 输出 4 类文档（全过程报告/简报/SKILL建议/蓝图建议）
-- quick_validate 9 个 .human skill 全通过（sub-E-agent frontmatter name 改小写）
-- 建 PROJECT_STATUS.md
-- 更新 optics_agent/AGENTS.md（加 SEPR 姊妹工作区说明）
-
-### 阶段六：v3 文献审查（94 篇）
-- 用户要求审查整个 v3 设计风险（不只 prompt 工程，是整个框架）
-- 派子 agent 多源查 arxiv+exa+github+firecrawl，94 篇文献分 A-K 11 类下载到 `optics_agent/papers/SEPR/`
-- 产出 3 份报告：CONTEXT-for-subagent.md / CATEGORY-READING-NOTES.md / REVIEW-REPORT.md
-- 5 条最高优先级风险：LLM-as-judge 把 fallback 当成功 / 自迭代假进步 / 子 agent 递归越权 / 记忆污染 / 蓝图无 schema 变随机实验
-
-### 阶段七：失败防护 + 16 条落地
-- 落地失败防护：同一步重跑最多 5 轮 + 每轮新证据/新假设 + retry fingerprint + case/evolution 级资源上限
-- 在另一 fork 派 3 个子 agent 落地 REVIEW-REPORT 16 条建议（P0/P1/P2 三批）
-- 本 session grep 验证 16 条全部命中目标文件
-- DESIGN.md §15 更新为"16 条全部落地"完整表格
-
-### 阶段八：.claude 详细版 + 双系统适配 + 三文件同步（2026-06-30）
-- **.claude/skills/ 4 身份详细版完成**：把 .human/（中文大纲）提示词工程详细化到 .claude/skills/（中文 prompt-engineered 执行版），4 身份（main/sub/evolution/sub-E）共 6465 行，42 个 Markdown 文件，quick_validate 全通过。每个 workflow 步骤有完整 spawn 指令（全局+局部拼接好）+retry_budget+blocker_condition+决策问题+gate
-- **OpenCode 适配落地**（GPT-5.5 备选方案）：Opus 不稳定，备选 GPT-5.5。判定 OpenCode 适配优于 Codex（支持层级委派+permission 统一+skill 懒加载接近 Claude Code）。调研结论：OpenCode 无硬隔离字段，规则文件从当前目录向上找 AGENTS.md/CLAUDE.md 第一个命中胜出；skill 懒加载（只暴露 name/description，agent 调 skill tool 加载正文）；子 agent 递归用 permission.task 控制。落地：SEPR/AGENTS.md（隔离上级）+ opencode.json（permission/agent 配置 108 行）+ .opencode/prompts/（4 角色 prompt，强制先加载 skill）+ scripts/start-opencode-sepr.ps1 + notes/opencode-adaptation-CN.md（166 行调研报告）
-- **三文件同步规则落地**：SEPR 三个根配置文件（CLAUDE.md/AGENTS.md/opencode.json）改任何一个必须同步审改其它两个，避免 Claude Code 和 OpenCode 行为分叉。规则写进 SEPR/CLAUDE.md + SEPR/AGENTS.md + optics_agent/AGENTS.md（OA 的 CC 改 SEPR 时遵守）
-- **hardlink 修复**：发现 optics_agent 的 AGENTS.md 和 CLAUDE.md 内容不同（编辑工具破坏 hardlink），用 Remove-Item + New-Item -ItemType HardLink 重建。教训：每次改 AGENTS.md/CLAUDE.md 后要验证 hash 一致
-- **两工作区分工架构明确**：optics_agent = 设计 SEPR 的元工作区；SEPR = agent 复现论文执行工作区；人工预训练循环：设计→SEPR 复现→经验反馈给 OA 的 CC→OA 改进设计→重跑
-- **optics_agent 系统更新**：AGENTS.md/CLAUDE.md 同步（329 行）+ 9 个 skill quick_validate 通过 + SEPR 边界明确 + Mie blocker 解除 + FINAL Mie 复现计划（7 阶段顺序+论文简介+启动指令）
-
-### 阶段九：子 agent 深度+工具限制配置（2026-06-30）
-- **Claude Code `.claude/agents/` 4 文件落地**：`main-agent.md` / `evolution-agent.md` 的 `tools` 含 `Agent`、`maxTurns=50`，`sub-agent.md` / `sub-E-agent.md`（frontmatter `name: sub-e-agent`）的 `tools` 含 `Agent`、`maxTurns=15`，四者均设 `disallowedTools: mcp__*, NotebookEdit`；第 3 层叶子由 sub/sub-E spawn 时省略 `Agent`，不再继续 spawn。
-- **OpenCode `opencode.json` 细化为 6 agent**：`sepr-main` / `sepr-evolution` 为编排层 `maxTurns=50`，只放行对应执行层和 leaf；`sepr-sub` / `sepr-sub-e` 为执行层 `maxTurns=15`，只放行对应 leaf；新增 `sepr-sub-leaf` / `sepr-sub-e-leaf` 两个叶子角色，`maxTurns=15` 且 `permission.task: deny`。
-- **两系统对齐表**：编排层可 spawn，执行层只 spawn 叶子，叶子层禁止 spawn；工具 allowlist 统一为 `Read/Write/Edit/Bash/Glob/Grep/ToolSearch/Skill/Agent`（OpenCode 对应 read/glob/grep/list/edit/bash/skill/task），`edit/bash` 默认 `ask`。
-- **文档同步完成**：`CLAUDE.md` 新增“子 Agent 深度与工具限制”节，`AGENTS.md` 更新 Tool/Spawn Policy，`.opencode/prompts/` 6 个 prompt 明确 leaf 机制与“不再委派”。
-
-### 阶段十一：V3 加固基础版落地 + OpenCode 撤销（2026-07-03）
-
-> 本阶段实操 SEPR 本体（Claude Code 侧），走用户 human gate。**以下 supersede 阶段八/九与 §5.18–5.20 中关于 OpenCode / 双系统 / 三文件同步 / 旧叶子软约束的描述。**
-
-- **叶子层硬化（堵审计 C1）**：新增 `.claude/agents/sub-leaf.md`、`sub-e-leaf.md`（`tools` 不含 `Agent`，框架层无法再 spawn）。执行者 spawn 叶子改用 `subagent_type: sub-leaf` / `sub-e-leaf`，不再“复用 sub 身份 + prompt 提醒省略 Agent”（软约束→硬约束）。同步改 `sub-agent.md` / `sub-E-agent.md` body + `.claude|.human/skills/sub-agent|sub-E-agent/SKILL.md`（原则 1+2）。
-- **skills: 预加载**：4 个非叶子 agent frontmatter 加 `skills:` 预加载各自身份 skill（main→main-agent 等）；`skill-print.py` 保留兜底；叶子不预加载（保持轻）。
-- **OpenCode 撤销**：删 `opencode.json`、`.opencode/`（含 node_modules）、`scripts/start-opencode-sepr.ps1`；`AGENTS.md` 降为指向 `CLAUDE.md` 的 stub；`CLAUDE.md` 删「三文件同步规则」节、「子 Agent 深度」改 Claude-only+leaf、删 OpenCode 路由注。**三文件同步约束取消**（规则主源 = `CLAUDE.md` 一处）。optics_agent 侧 CLAUDE.md/AGENTS.md「双系统」段改写 + hardlink 重建。Opus 不稳应急 = 改 Claude Code 的 URL/API 指向 DeepSeek。
-- **搁置**：hooks（推迟到 Mie 跑通后）、`disable-model-invocation`（提交作业能力在 `magnus` 工作流 skill 内，blanket disable 会破坏 COMSOL case 自动加载，正解走 hooks 的 `PreToolUse` 拦 submit 命令）。
-- **验证**：6 个 agent frontmatter YAML 解析 OK；两 leaf 确认无 `Agent` 工具；`sub-agent` / `sub-E-agent` skill quick_validate 通过；active `.claude` 无旧叶子/OpenCode 残留。
-- **配套产出**（optics_agent 侧）：`papers/SEPR/V3-HARDENING-DESIGN-CN.md`（提案，已官方核验）、`V3-CHANGELOG-SINCE-HUMAN-CN.md`、`V4-ROADMAP-CN.md`、`reproduction_test/mie/MIE-复现执行手册-CN.md`。
-
----
 
 ## 3. 当前状态（2026-06-30）
 

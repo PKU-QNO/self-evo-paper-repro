@@ -6,9 +6,9 @@
 
 ## 输出要求
 
-- 推导笔记（`.work/<case>/derivation.md`）：完整推导，核心公式标来源页码（教材或论文）
-- 代码（`.work/<case>/code/*.py`）：用 scipy.special，不自写特殊函数
-- 测试（`.work/<case>/tests/test_*.py`）：和代码同步写，物理约束硬编码
+- 推导笔记（`.work/.todo/{paper}/{case}/derivation.md`）：完整推导，核心公式标来源页码（教材或论文）
+- 代码（`.work/.todo/{paper}/{case}/code/*.py`）：用 scipy.special，不自写特殊函数
+- 测试（`.work/.todo/{paper}/{case}/tests/test_*.py`）：和代码同步写，物理约束硬编码
 
 ## 要传达给子 agent 的约定
 
@@ -39,8 +39,8 @@
 ```
 【第 04 步：theory_and_implementation】
 【任务】理论推导 + 代码实现。从 Maxwell 方程到最终表达式，用 Python 实现。
-【输入】.work/{case}/formalization.yaml / repro_plan.md
-【输出】.work/{case}/derivation.md / code/*.py / tests/test_*.py
+【输入】.work/.todo/{paper}/{case}/formalization.yaml / repro_plan.md
+【输出】.work/.todo/{paper}/{case}/derivation.md / code/*.py / tests/test_*.py
 【要传达的约定】核心公式 $a_n, b_n$ 必须对着教材核，不能只靠 review 论文；特殊函数用 scipy.special 不自写；单位 SI；代码和测试同步写（TDD：物理约束测试值先写死，代码迁就测试）；不自己宣布成功。
 【必须回答的决策问题】1.需不需要数值计算脚本？还是纯解析够？2.需不需要 magnus 云计算？本地跑得动吗？3.代码复杂度预估？哪些用 scipy.special、哪些要自写？4.核心公式来源是哪本教材第几页？review 论文有没有冲突？5.级数截断 $n_{\max}$ 怎么定？
 【人工 gate】③ 前置——产出核心公式后准备进 step 05 对抗式审查，用户在 step 04/05 末核对公式。
@@ -60,14 +60,14 @@
 
 ### 输入路径
 - 论文原文：`.paper/{paper}` 或 spawn 指令指定 PDF。
-- 本 case 工作区：`.work/.todo/{paper}/{case}/{timestamp}/` 或 spawn 指令指定路径。
+- 本 case 工作区：`.work/.todo/{paper}/{case}/` 或 spawn 指令指定路径。
 - 子报告读取：`.work/.sub-report/` 或 `.work/.evolution/{timestamp}/sub-reports/`。
 - 待治理输入：`toEflow/`、`.work/.todo/`、`.E-history/`（仅自迭代步骤）。
 - 缺路径时先在报告写 `blocked_by: missing_input_path`，不要猜。
 
 ### 输出路径
 - 主报告或子报告目录：`.work/.sub-report/`。
-- 本步中间产物：`.work/.todo/{paper}/{case}/{timestamp}/04-theory_and_implementation/` 或 `.work/.evolution/{timestamp}/04-theory_and_implementation/`。
+- 本步中间产物：`.work/.todo/{paper}/{case}/04-theory_and_implementation/` 或 `.work/.evolution/{timestamp}/04-theory_and_implementation/`。
 - 草稿文件：只写 `.work/` 沙箱；正式 `.claude/skills/` 和 `.human/skills/` 只能在 human gate 后同步。
 - 输出文件名带 `04-theory_and_implementation-{timestamp}`，避免覆盖。
 

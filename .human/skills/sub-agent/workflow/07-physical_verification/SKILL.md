@@ -29,8 +29,8 @@
 
 ## 输出约定
 
-- 验证报告：`.work/<case>/physical_verification.md`
-- benchmark 草稿：`.work/self-iteration/benchmark_<case>.yaml`
+- 验证报告：`.work/.todo/{paper}/{case}/physical_verification.md`
+- benchmark 草稿：`.work/.todo/{paper}/{case}/self-iteration/benchmark_<case>.yaml`
 
 ## 常见坑
 

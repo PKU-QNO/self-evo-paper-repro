@@ -26,7 +26,7 @@
 
 ## 输出约定
 
-- 审查报告：`.work/<case>/theory_check.md`
+- 审查报告：`.work/.todo/{paper}/{case}/theory_check.md`
 - 修正后的推导/代码（如需）
 
 ## 常见坑

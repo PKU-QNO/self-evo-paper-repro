@@ -1,0 +1,163 @@
+# formalization.yaml — Akimov 2401.04146 · Fig3 超辐射/非辐射 loci 复现 spec
+# 步骤: 03-reproduction_design | case: 0703-01-akimov-mie-v1 | timestamp: 20260704-01
+# 目标图已由用户 Gate1 裁决锁定 = Fig3（见 GATE1-决定.md 决定 1），本 spec 不得更换目标。
+# 本文件是后续 step04/06 代码的唯一物理输入源：代码消费本 spec，不消费论文 prose。
+
+meta:
+  paper: "arXiv 2401.04146 (Akimov, Mie scattering theory: A review of physical features and limitations)"
+  case: "0703-01-akimov-mie-v1"
+  target_figure: "Fig3"
+  target_figure_source: "GATE1-决定.md 决定1（用户裁决）; figures.md 候选A; figs/Fig3.png"
+  formula_primary_source: "Bohren & Huffman 教材标准式（.paper/scattering.pdf）— GATE1 决定3"
+  formula_cross_check_source: "Akimov 论文式 (S:a_l)/(S:b_l)（formulas.md 第三节，带显式 q_i,q_e 因子）"
+  result_class_ceiling: "pipeline_completed（本步为设计，无仿真无物理验证）"
+
+geometry:
+  description: >
+    单一均匀各向同性球，半径 R，嵌入无限大均匀外介质。
+    问题完全无量纲化：所有物理量只通过外部尺寸参数 q_e = k_e R 和
+    介电常数比 eps_ratio = ε_i/ε_e 进入。
+    Fig3 复现不需要任何具体 R 值（也不需要具体波长/频率）——
+    横轴直接就是 q_e，Mie 系数 a_l(q_e, eps_ratio)、b_l(q_e, eps_ratio)
+    是这两个无量纲量的函数。此点为本 spec 的刻意设计，非缺失。
+  parameters:
+    R: "符号量，不取具体值（无量纲化后消去）"
+    q_e: { definition: "q_e = k_e R, k_e = k_0 sqrt(ε_e)", range: "[0, 10]", unit: "无量纲", source: "Fig3 横轴, parameter_table.md 候选A" }
+    q_i: { definition: "q_i = k_i R = m q_e, k_i = k_0 sqrt(ε_i)", note: "负 ε_i/ε_e 时 q_i 为纯虚（取主值平方根，Im m >= 0）", unit: "无量纲" }
+  coordinate: "球坐标 (r, θ, φ)，球心为原点；矢量球谐展开，轨道指数 l，方位指数 m_az"
+
+materials:
+  inside:
+    epsilon_i: "实标量（Fig3 域内纯实，可为负），无色散、无吸收（Im ε_i = 0）"
+  outside:
+    epsilon_e: "实正标量（外介质无吸收，Im ε_e = 0，入射幅度分解式的前提）"
+  effective_parameter:
+    eps_ratio: { definition: "ε_i/ε_e", range: "[-10, 15]", type: "纯实", source: "Fig3 纵轴, GATE1 决定2" }
+    m_rel: { definition: "m = sqrt(ε_i/ε_e)（BH 相对折射率）", note: "eps_ratio<0 时 m 纯虚，scipy 球 Bessel 复宗量可算（已在 step03 预验证 300 随机点通过）" }
+  magnetic: "μ = μ_0 处处成立（非磁性）"
+  dispersion: "无。零材料色散依赖，不下载任何材料数据（GATE1 决定2）"
+
+equations:
+  primary_BH:
+    description: "Lorenz-Mie 散射系数，Bohren & Huffman 标准记号（主源，step04 以此实现）"
+    notation_map: "x = q_e; mx = q_i; m = sqrt(ε_i/ε_e); BH 的 a_n(电多极/TM) ↔ Akimov a_l; BH 的 b_n(磁多极/TE) ↔ Akimov b_l"
+    a_l_TM: |
+      a_l = [ m ψ_l(mx) ψ_l'(x) − ψ_l(x) ψ_l'(mx) ] / [ m ψ_l(mx) ξ_l'(x) − ξ_l(x) ψ_l'(mx) ]
+    b_l_TE: |
+      b_l = [ ψ_l(mx) ψ_l'(x) − m ψ_l(x) ψ_l'(mx) ] / [ ψ_l(mx) ξ_l'(x) − m ξ_l(x) ψ_l'(mx) ]
+    riccati_bessel: "ψ_l(q) = q j_l(q); ξ_l(q) = q h_l^(1)(q) = ψ_l(q) − i χ_l(q), χ_l(q) = −q y_l(q); ' 为对宗量求导"
+    implementation: "scipy.special.spherical_jn / spherical_yn（含 derivative=True），复宗量直接可用；不自实现特殊函数"
+  cross_check_akimov:
+    description: "Akimov 论文式 (S:a_l)/(S:b_l)，分子分母带显式 q_i,q_e 因子，与 BH 式等价（交叉验证用，两式数值不一致即 blocker——GATE1 决定3）"
+    a_l_TM: |
+      a_l = [ q_i ψ_l(q_i) ψ_l'(q_e) − q_e ψ_l(q_e) ψ_l'(q_i) ] / [ q_i ψ_l(q_i) ξ_l'(q_e) − q_e ξ_l(q_e) ψ_l'(q_i) ]
+    b_l_TE: |
+      b_l = [ q_e ψ_l(q_i) ψ_l'(q_e) − q_i ψ_l(q_e) ψ_l'(q_i) ] / [ q_e ψ_l(q_i) ξ_l'(q_e) − q_i ξ_l(q_e) ψ_l'(q_i) ]
+    equivalence: |
+      等价关系推导：Akimov 式分子分母同除 q_e·ψ_l'(q_i)… 更直接地，注意 q_i = m q_e，
+      Akimov 分子 = q_e·[ m ψ_l(q_i) ψ_l'(q_e) − ψ_l(q_e) ψ_l'(q_i) ]·(公共因子)，
+      与 BH 分子逐项对应（q_i 因子 = m·q_e，提取公共 q_e 后即 BH 形式）。
+      形式差异来源：链式法则 d/dr = k·d/dq 的 k 因子被 Akimov 式显式保留、BH 式吸收进 m。
+      step03 已数值预验证：300 随机点（l=1..3, eps_ratio∈[-10,15], q_e∈(0,10]）
+      max|a_BH − a_Akimov| = 4.7e-16，max|b_BH − b_Akimov| = 3.5e-16 → 等价成立。
+      正式验证在 T2 以脚本形式固化。
+  cross_sections:
+    sigma_sca: "σ_sca = (2π/k_e²) Σ_l (2l+1)(|a_l|² + |b_l|²)"
+    sigma_abs: "σ_abs = (2π/k_e²) Σ_l (2l+1)[Re(a_l+b_l) − (|a_l|²+|b_l|²)]"
+    sigma_ext: "σ_ext = σ_sca + σ_abs = (2π/k_e²) Σ_l (2l+1) Re(a_l+b_l)（光学定理）"
+    normalization: "效率 Q = σ/(πR²)；因子 2π/(k_e² π R²) = 2/q_e²"
+    truncation: "谱求和截断 n_max = ceil(x + 4 x^{1/3} + 2)（Wiscombe，trust 教材惯例，非论文原文）；Fig3 本身只需单个 l=1,2,3，无求和"
+  limit_state_identities:
+    superradiant: "a_l = 1（或 b_l = 1）⇒ σ_sca,l/(πR²) = 2(2l+1)/q_e²，σ_abs,l = 0（Layer2 自洽判据）"
+    nonradiating: "a_l = 0（或 b_l = 0）⇒ 该通道 σ_sca,l = σ_abs,l = 0（Layer2 自洽判据）"
+  lossless_unitarity: |
+    关键结构性质（step03 数值确认，300 随机点 max||a|²−Re a| = 4.4e-16）：
+    纯实 ε 比（含负值）⇒ 无吸收 ⇒ |a_l|² = Re(a_l)，即 a_l 恒落在复平面圆 |a_l − 1/2| = 1/2 上。
+    推论：Im(a_l) = 0 ⟺ a_l ∈ {0, 1}。
+    这把两族 loci 的求根统一为单个实方程 Im a_l(q_e, eps_ratio) = 0，
+    根处按 Re(a_l) ≈ 1 / ≈ 0 分类为超辐射/非辐射。见 solver。
+    （注意：分子 N 本身在负 eps_ratio 域不是"i^l × 实数"，不能用"分子=0 是实方程"这条路——
+    step03 已数值证伪该捷径；酉性路线是正确的实数化方式。）
+
+boundary_conditions:
+  interface: "r = R 球面处切向 E、切向 H 连续（4 个标量条件，逐 (l, m_az, 偏振) 通道解出 a_l, b_l, c_l, d_l）"
+  radiation: "散射场取向外辐射边界条件（h_l^(1)，配合 e^{−iωt} 时谐约定）；内部场取原点正则解 j_l(k_i r)"
+  role_in_spec: "这是 a_l, b_l 表达式的推导来源（BH §4.3 与 Akimov §2 一致）；本复现直接使用闭式系数，不重新数值解边值问题"
+
+sources:
+  incident: "x 偏振、沿 z 传播的单色 TEM 平面波 E^inc = e_x E_0 exp[i(k_e z − ωt)]"
+  role_in_fig3: >
+    Fig3 只依赖系数函数 a_l(q_e, eps_ratio)、b_l(q_e, eps_ratio)，
+    它们由边界条件唯一确定，与入射幅度 E_0 无关（系数是比值）。
+    因此复现 Fig3 不需要给 E_0 具体值（代码里可令 E_0 = 1），
+    入射波信息只通过"入射球谐幅度分解成立"这一前提（Im ε_e = 0）间接进入。
+
+solver:
+  type: "解析闭式系数 + 数值求根（一维 brentq）——不是 FEM/FDTD，不是优化拟合"
+  problem_statement: >
+    在 (q_e, eps_ratio) ∈ (0,10] × [-10,15] 实平面上，
+    对 l = 1,2,3、TM(a_l)/TE(b_l) 各求两族等值线：
+    超辐射 locus {a_l = 1}（Fig3 虚线）与非辐射 locus {a_l = 0}（Fig3 实线）。
+  recommended_strategy: |
+    主方案（推荐）：固定 q_e 切片扫描 + 酉性实数化 + brentq 精化 + Re 分类。
+    1. q_e 取密网格（建议 ≥ 800 点覆盖 (0,10]，近 0 端可疏，曲线密集区可加密）；
+    2. 每个 q_e 上对 eps_ratio ∈ [-10,15] 取密网格（建议 ≥ 4000 点），
+       计算 g(eps) = Im a_l（TM）或 Im b_l（TE）；
+    3. 检测 g 的符号翻转区间（注意处理 g 恰好落 0 的网格点，如 eps_ratio = 1 平凡非辐射线），
+       每个区间用 scipy.optimize.brentq 精化到 xtol ≤ 1e-10；
+    4. 根处计算完整复系数：Re > 0.5 → 超辐射（并断言 |a_l − 1| < 1e-8），
+       Re < 0.5 → 非辐射（断言 |a_l| < 1e-8）；断言失败的根丢弃并记日志（可能是数值伪根/极点）；
+    5. 按根的连续性把 (q_e, eps) 点串成曲线族输出 CSV。
+    理由：酉性使单实方程严格闭合（不是近似）；brentq 对一维括号根稳健；
+    切片法比二维 contour 提取给出机器精度的根位置，便于 Layer3 与数字化 Fig3 定量对比。
+    step03 已切片试算：l=1 TM, q_e=1 找到超辐射根 eps ≈ −4.640，与 Fig3 面板 1 虚线
+    低谷（≈ −5 @ q_e≈1.2）位置一致。
+  fallback_strategy: |
+    备选/交叉可视化方案：二维密网格上直接计算 Im a_l 的符号图 + matplotlib contour(level=0)
+    提取零等值线，再按 Re a_l 着色分类。精度低于主方案（受网格限制），
+    但可作为主方案曲线完备性（有没有漏根/漏支）的独立目测核对。
+  special_cases:
+    - "eps_ratio = 1：a_l = b_l = 0 对所有 l、所有 q_e 恒成立（阻抗匹配平凡非辐射线，Fig3 各面板水平实线）——解析已知，直接画，不靠求根"
+    - "q_e → 0 轴：平凡非辐射（Rayleigh 极限 a_l → 0）——Fig3 各面板纵轴处实线；求根从 q_e_min > 0（如 0.0125）开始"
+    - "eps_ratio = 0：m = 0 退化点，网格避开（±1e-6 邻域）"
+    - "eps_ratio < 0：m 纯虚（主值，Im m ≥ 0），ψ_l(q_i) 变 modified-Bessel 型指数增长；l=3, eps=-10, q_e=10 角点处 |分子|~5e14 仍在 float64 安全范围（step03 已核），无需重标度"
+  environment: "本地 Python（numpy + scipy + matplotlib），单核秒级~分钟级；不需要 Magnus/COMSOL/HPC"
+
+observables:
+  description: "与 Fig3 六面板逐一对应的 loci 曲线族（不是散射谱、不是截面曲线）"
+  panels:
+    - { panel: "上排左", l: 1, polarization: "TM", quantity: "{a_1 = 1} 虚线族 与 {a_1 = 0} 实线族" }
+    - { panel: "上排中", l: 2, polarization: "TM", quantity: "{a_2 = 1} 与 {a_2 = 0}" }
+    - { panel: "上排右", l: 3, polarization: "TM", quantity: "{a_3 = 1} 与 {a_3 = 0}" }
+    - { panel: "下排左", l: 1, polarization: "TE", quantity: "{b_1 = 1} 与 {b_1 = 0}" }
+    - { panel: "下排中", l: 2, polarization: "TE", quantity: "{b_2 = 1} 与 {b_2 = 0}" }
+    - { panel: "下排右", l: 3, polarization: "TE", quantity: "{b_3 = 1} 与 {b_3 = 0}" }
+  axes: { x: "q_e ∈ [0, 10]", y: "ε_i/ε_e ∈ [-10, 15]（纯实）" }
+  line_convention: "论文原图：红虚线 = 超辐射（a_l=1）；蓝实线 = 非辐射（a_l=0）。复现图沿用同一约定便于叠图对比"
+  auxiliary_observables: "Layer1 verifier 需要的 Q_sca/Q_ext/Q_abs(m, x)（来自 T1 核模块，接口契约见 repro_plan T1）"
+
+assumptions:
+  - "线性、各向同性、均匀介质；球内外 ε 均为常数标量"
+  - "非磁性：μ = μ_0 处处成立"
+  - "ε_i/ε_e 纯实（Fig3 域定义；物理上意味着无吸收，酉性 |a_l|² = Re a_l 严格成立）"
+  - "外介质无吸收 Im ε_e = 0（入射球谐幅度分解的前提；Fig3 用比值参数化后自动满足）"
+  - "时谐约定 e^{−iωt}（Akimov 论文 (H),(E) 式显式给出；BH 教材同为 e^{−iωt}，两源约定一致，散射场均用 h_l^(1)——无需符号翻转）"
+  - "经典 Mie 框架（论文 §2–§3）；§4 的激发源修正/过渡层修正显式不在本复现范围"
+  - "无量纲化：全部物理内容由 (q_e, ε_i/ε_e) 两个无量纲量承载，R、ω、E_0 不取具体值"
+
+missing_fields:
+  - field: "论文 Fig3 的数值生成方法"
+    detail: "论文未说明作者用什么求根/网格方法与密度生成 Fig3 曲线——不影响复现（方法自选，结果应与图一致），但 Layer3 对比时曲线端点/密集区取样密度需自行决定"
+  - field: "Fig3 各面板曲线分支的逐条标注"
+    detail: "论文未标注每条曲线对应第几个径向模式（分支序号）；对比时按位置匹配曲线族整体，不逐条按模式编号对齐"
+  - field: "ψ_l', ξ_l' 递推式"
+    detail: "论文未给；由 scipy.special derivative=True 补（trust 教材/库惯例，missing_info.md #5）"
+  - field: "Layer3 量化阈值的先例"
+    detail: "loci 图（曲线族位置对比）没有现成 RMSE 阈值惯例；repro_plan T4 给出建议阈值（数字化取样点到复现曲线族的距离），最终阈值待 Gate2 用户认可"
+
+provenance:
+  source_artifact: "step01/02 产物（formulas.md 第三/六节、parameter_table.md 候选A、figures.md Fig3、paper_understanding.md）+ GATE1-决定.md + figs/Fig3.png + step03 数值预验证（本机 scipy 试算）"
+  evidence_type: "论文原文公式转写 + Gate1 用户裁决 + 300 随机点数值等价性/酉性验证 + 单切片求根试算"
+  timestamp_version: "20260704-01"
+  scope_applicability: "仅 Fig3 复现（单球经典 Mie，纯实 ε 比）；不适用于含耗散/色散/多层/超吸收态（Fig6 需复根）场景"
+  confidence_result_class: "高（spec 设计 + 预验证通过）/ pipeline_completed"

@@ -6,7 +6,7 @@
 
 ## 输出要求
 
-- 可复现性自检报告（`.work/<case>/reproducibility_check.md`）：
+- 可复现性自检报告（`.work/.todo/{paper}/{case}/reproducibility_check.md`）：
   - 参数微扰测试（改一两个参数，结论稳吗）
   - 独立重跑（清缓存重跑，结果一致吗）
   - 独立实现 + 物理硬约束 + 教材公式 + 论文图量化交叉验证（不同证据链是否支持同一结论）
@@ -38,8 +38,8 @@
 ```
 【第 09 步：reproducibility_selfcheck】
 【任务】排除"瞎猫碰上死耗子"——确认结果可复现、不是凑巧。
-【输入】.work/{case}/code/*.py / data/*.csv
-【输出】.work/{case}/reproducibility_check.md
+【输入】.work/.todo/{paper}/{case}/code/*.py / data/*.csv
+【输出】.work/.todo/{paper}/{case}/reproducibility_check.md
 【要传达的约定】不是跑一遍就完，要主动扰动验证；微扰后结论变了说明不稳定要查；物理直觉复核：人该做的部分留给人工 gate。
 【必须回答的决策问题】1.参数微扰后结论稳吗？哪些参数敏感？2.独立重跑结果一致吗？3.有没有"凑巧对上"的嫌疑？4.可以确认物理复现成功了吗？
 【人工 gate】确认成功时触发关键节点"即将进 .result"问用户。

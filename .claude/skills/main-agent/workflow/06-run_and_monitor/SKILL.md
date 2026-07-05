@@ -6,9 +6,9 @@
 
 ## 输出要求
 
-- 运行日志（`.work/<case>/run_log.md`）：命令、耗时、输出
-- 结果数据（`.work/<case>/data/*.csv`）
-- 初步图（`.work/<case>/figs/*.png`）
+- 运行日志（`.work/.todo/{paper}/{case}/run_log.md`）：命令、耗时、输出
+- 结果数据（`.work/.todo/{paper}/{case}/data/*.csv`）
+- 初步图（`.work/.todo/{paper}/{case}/figs/*.png`）
 - 异常记录（如有）
 
 ## 要传达给子 agent 的约定
@@ -38,8 +38,8 @@
 ```
 【第 06 步：run_and_monitor】
 【任务】运行代码，监视执行。本地跑或 magnus 云跑（step 04 决定）。
-【输入】.work/{case}/code/*.py / tests/
-【输出】.work/{case}/run_log.md / data/*.csv / figs/*.png / 异常记录
+【输入】.work/.todo/{paper}/{case}/code/*.py / tests/
+【输出】.work/.todo/{paper}/{case}/run_log.md / data/*.csv / figs/*.png / 异常记录
 【要传达的约定】先跑最小 smoke case 确认能跑再跑完整扫描；本地跑得动就本地，magnus 云跑要保守提交（查现有 job、资源不过半）；监视输出，数值异常（NaN/Inf/负值）立即停；保留日志不覆盖。
 【必须回答的决策问题】1.跑成功了吗？有没有 NaN/Inf/异常值？2.初步结果形状对吗（峰在该出现的位置吗）？3.耗时和资源多少？要不要换 magnus？4.可以进物理验证了吗？
 【人工 gate】无（异常时触发关键节点"物理验证失败/换方案"问用户）
@@ -59,14 +59,14 @@
 
 ### 输入路径
 - 论文原文：`.paper/{paper}` 或 spawn 指令指定 PDF。
-- 本 case 工作区：`.work/.todo/{paper}/{case}/{timestamp}/` 或 spawn 指令指定路径。
+- 本 case 工作区：`.work/.todo/{paper}/{case}/` 或 spawn 指令指定路径。
 - 子报告读取：`.work/.sub-report/` 或 `.work/.evolution/{timestamp}/sub-reports/`。
 - 待治理输入：`toEflow/`、`.work/.todo/`、`.E-history/`（仅自迭代步骤）。
 - 缺路径时先在报告写 `blocked_by: missing_input_path`，不要猜。
 
 ### 输出路径
 - 主报告或子报告目录：`.work/.sub-report/`。
-- 本步中间产物：`.work/.todo/{paper}/{case}/{timestamp}/06-run_and_monitor/` 或 `.work/.evolution/{timestamp}/06-run_and_monitor/`。
+- 本步中间产物：`.work/.todo/{paper}/{case}/06-run_and_monitor/` 或 `.work/.evolution/{timestamp}/06-run_and_monitor/`。
 - 草稿文件：只写 `.work/` 沙箱；正式 `.claude/skills/` 和 `.human/skills/` 只能在 human gate 后同步。
 - 输出文件名带 `06-run_and_monitor-{timestamp}`，避免覆盖。
 

@@ -25,9 +25,9 @@
 
 ## 输出约定
 
-- 日志：`.work/<case>/run_log.md`
-- 数据：`.work/<case>/data/*.csv`
-- 初步图：`.work/<case>/figs/*.png`
+- 日志：`.work/.todo/{paper}/{case}/run_log.md`
+- 数据：`.work/.todo/{paper}/{case}/data/*.csv`
+- 初步图：`.work/.todo/{paper}/{case}/figs/*.png`
 
 ## 常见坑
 

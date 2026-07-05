@@ -18,7 +18,7 @@
 
 ## 输出约定
 
-- 自检报告：`.work/<case>/reproducibility_check.md`
+- 自检报告：`.work/.todo/{paper}/{case}/reproducibility_check.md`
 
 ## 常见坑
 
@@ -44,14 +44,14 @@
 
 ### 输入路径
 - 论文原文：`.paper/{paper}` 或 spawn 指令指定 PDF。
-- 本 case 工作区：`.work/.todo/{paper}/{case}/{timestamp}/` 或 spawn 指令指定路径。
+- 本 case 工作区：`.work/.todo/{paper}/{case}/` 或 spawn 指令指定路径。
 - 子报告读取：`.work/.sub-report/` 或 `.work/.evolution/{timestamp}/sub-reports/`。
 - 待治理输入：`toEflow/`、`.work/.todo/`、`.E-history/`（仅自迭代步骤）。
 - 缺路径时先在报告写 `blocked_by: missing_input_path`，不要猜。
 
 ### 输出路径
 - 主报告或子报告目录：`.work/.sub-report/`。
-- 本步中间产物：`.work/.todo/{paper}/{case}/{timestamp}/09-reproducibility_selfcheck/` 或 `.work/.evolution/{timestamp}/09-reproducibility_selfcheck/`。
+- 本步中间产物：`.work/.todo/{paper}/{case}/09-reproducibility_selfcheck/` 或 `.work/.evolution/{timestamp}/09-reproducibility_selfcheck/`。
 - 草稿文件：只写 `.work/` 沙箱；正式 `.claude/skills/` 和 `.human/skills/` 只能在 human gate 后同步。
 - 输出文件名带 `09-reproducibility_selfcheck-{timestamp}`，避免覆盖。
 

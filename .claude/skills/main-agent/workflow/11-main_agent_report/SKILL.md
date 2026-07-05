@@ -11,7 +11,7 @@
 子 agent step10 产出 4 类文档初稿放沙箱，本步你来做汇总定稿：
 
 **1. 全过程报告**（`.result/<paper>/full_report.md`）
-- 基于子 agent 草稿 `.work/<case>/full_report_draft.md`
+- 基于子 agent 草稿 `.work/.todo/{paper}/{case}/full_report_draft.md`
 - 补充主 agent 编排视角的全局判断
 - 每步引用于 agent 报告的路径
 - 保留决策过程和问题记录
@@ -43,6 +43,18 @@
 7. 给下一篇的接力
 8. 长期记忆更新摘要
 
+### 写 capsule（E-flow 输入契约，强制，100% fire——2026-07-04 补 A1 生产侧）
+
+复现 workflow 结束前，主 agent **必须**产出 `.work/.result/<case>/capsule.md`——这是 E-flow（自迭代）step01 的唯一输入。不产 capsule = 本篇复现对未来自迭代不存在。**不靠自觉：本步验收清单含"capsule.md 存在且字段齐全"，缺则本步不算完成。**
+
+capsule 必须带字段：
+- `processed: false`（E-flow 消费后置 true，防重复处理）
+- `run_id` / `case` / `timestamp`
+- `result_class`（7 级枚举）
+- `evidence_refs`（指向本 case 的关键报告/verifier 输出/对比图路径）
+- provenance 五要素（source_artifact / evidence_type / timestamp_version / scope_applicability / confidence_result_class）
+- 正文：本次复现"什么真的断了/什么有效"清单（对照信号盘逐类，没断的写"未触发"）+ 候选经验（GUIDING/CAUTIONARY/FACT/PROCEDURE 各若干条，可为空但要写明为空）
+
 ### 写 run manifest
 
 复现 workflow 结束前，主 agent 必须在 `.work/run_manifest.yaml` 写审计索引：
@@ -62,6 +74,10 @@
 3. 更新 memento 长期记忆（全局结论）
 4. 报告写到 `.work/.sub-report/main-<case>-<timestamp>.md`，也复制一份到 `.result/reports/`
 5. 写 `.work/run_manifest.yaml`，记录 fan-out/depth/result_class/retry_fingerprints；`result_class` 使用 CLAUDE.md 的 7 级枚举之一
+6. **写 `.work/.result/<case>/capsule.md`（见上节，强制）**——结束前自检：capsule 存在？字段齐全？`processed: false`？缺则不得宣布本步完成
+7. **增量更新 WORK_LOG（强制，见 `CLAUDE.md`「WORK_LOG 维护规范」）**——向该篇 `WORK_LOG/<NN>-<papername>-v<N>.md` 追加本 run 的带日期条目（做了什么/关键决策+为什么/引用 capsule·run_manifest·.result 路径/下一步或停机点）+ 更新"决策台账"节（CC 建议→用户裁决→落点+memento id）+ 顶层 `WORK_LOG.md` 摘要表加/更新该 run 一行。**只增不改历史。** 与 `todo.md` 分工：todo 记待办/状态，WORK_LOG 记叙事+决策，数据只引用不重抄。结束前自检：该篇 WORK_LOG 文件已追加本次条目？顶层摘要表已更新？缺则本步不算完成。
+
+> WORK_LOG 分文件按论文：一篇一文件，同篇多次复现分多文件（`-v1`/`-v2`…），version 由用户第一句话给定，不自造命名。首次为某篇建文件时用 `WORK_LOG/_TEMPLATE.md` 起头。
 
 ## 人工 gate
 
@@ -84,14 +100,14 @@
 
 ### 输入路径
 - 论文原文：`.paper/{paper}` 或 spawn 指令指定 PDF。
-- 本 case 工作区：`.work/.todo/{paper}/{case}/{timestamp}/` 或 spawn 指令指定路径。
+- 本 case 工作区：`.work/.todo/{paper}/{case}/` 或 spawn 指令指定路径。
 - 子报告读取：`.work/.sub-report/` 或 `.work/.evolution/{timestamp}/sub-reports/`。
 - 待治理输入：`toEflow/`、`.work/.todo/`、`.E-history/`（仅自迭代步骤）。
 - 缺路径时先在报告写 `blocked_by: missing_input_path`，不要猜。
 
 ### 输出路径
 - 主报告或子报告目录：`.work/.sub-report/`。
-- 本步中间产物：`.work/.todo/{paper}/{case}/{timestamp}/11-main_agent_report/` 或 `.work/.evolution/{timestamp}/11-main_agent_report/`。
+- 本步中间产物：`.work/.todo/{paper}/{case}/11-main_agent_report/` 或 `.work/.evolution/{timestamp}/11-main_agent_report/`。
 - 草稿文件：只写 `.work/` 沙箱；正式 `.claude/skills/` 和 `.human/skills/` 只能在 human gate 后同步。
 - 输出文件名带 `11-main_agent_report-{timestamp}`，避免覆盖。
 

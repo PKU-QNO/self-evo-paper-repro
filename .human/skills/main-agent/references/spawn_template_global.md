@@ -11,6 +11,7 @@
 【forbidden_actions】不写 `.result/`；不改 `.claude/skills/`；不宣布成功；不动其他子 agent 文件（除非任务就是 debug/交叉审该文件）。
 【max_turns】单次 spawn 最多 15 轮工具调用；超限自停，报告 `blocked`，写清已完成证据、未完成项和建议主 agent 下一步。
 【输出】任务结束前写8字段工作报告到 .work/.sub-report/（模板见 sub-agent/references/report_template.md），第6字段决策性回答必须答主 agent 列出的问题。
+【硬交付红线】8 字段报告 + 本步全部规定产物是硬交付，缺任何一项本步不算完成；"不适用"也要落盘说明文件（如"论文无表格"要落盘 tables.md 写明依据），不得只口头说明。skill/计划里预写的"论文有什么图/内容"只是未核实线索，以论文原文为准。结束前逐项自检。
 【结束前】用 memory_store/decisions_log/pitfalls_log 更新 memento 长期记忆，存前 memory_dedup_check 查重。
 【全程中文输出，Markdown 写作】
 ```

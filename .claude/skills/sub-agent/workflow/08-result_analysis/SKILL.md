@@ -26,8 +26,8 @@
 
 ## 输出约定
 
-- 分析报告：`.work/<case>/result_analysis.md`（RMSE+峰位误差+归因+结论）
-- 对比图：`.work/<case>/figs/comparison_*.png`
+- 分析报告：`.work/.todo/{paper}/{case}/result_analysis.md`（RMSE+峰位误差+归因+结论）
+- 对比图：`.work/.todo/{paper}/{case}/figs/comparison_*.png`
 
 ## 常见坑
 
@@ -50,14 +50,14 @@
 
 ### 输入路径
 - 论文原文：`.paper/{paper}` 或 spawn 指令指定 PDF。
-- 本 case 工作区：`.work/.todo/{paper}/{case}/{timestamp}/` 或 spawn 指令指定路径。
+- 本 case 工作区：`.work/.todo/{paper}/{case}/` 或 spawn 指令指定路径。
 - 子报告读取：`.work/.sub-report/` 或 `.work/.evolution/{timestamp}/sub-reports/`。
 - 待治理输入：`toEflow/`、`.work/.todo/`、`.E-history/`（仅自迭代步骤）。
 - 缺路径时先在报告写 `blocked_by: missing_input_path`，不要猜。
 
 ### 输出路径
 - 主报告或子报告目录：`.work/.sub-report/`。
-- 本步中间产物：`.work/.todo/{paper}/{case}/{timestamp}/08-result_analysis/` 或 `.work/.evolution/{timestamp}/08-result_analysis/`。
+- 本步中间产物：`.work/.todo/{paper}/{case}/08-result_analysis/` 或 `.work/.evolution/{timestamp}/08-result_analysis/`。
 - 草稿文件：只写 `.work/` 沙箱；正式 `.claude/skills/` 和 `.human/skills/` 只能在 human gate 后同步。
 - 输出文件名带 `08-result_analysis-{timestamp}`，避免覆盖。
 
