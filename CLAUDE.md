@@ -36,6 +36,37 @@ Opus 不稳定时的应急方案：改 Claude Code 的 URL/API 指向 DeepSeek�
 | 物理推导（derivation.md）、step02 理解、step03 spec、step07/08 物理归因 | **Claude**（Gate3 核公式的上游，verifier 验代码不验推导文本） |
 | main 编排、gate 裁决、capsule/WORK_LOG/报告 | **Claude（不省这条）** |
 
+> 术语统一：上表「codex」= cheap worker 层，等同 `notes/sepr_model_routing_gpt55_claude_code-CN.md` 里的 `gpt-5.5[400k]`（经 `codex-cli` CLI-MCP 委托）。两者是同一套委托规范，不分裂成两套。
+
+**Claude 侧 agent 模型 = 全 Sonnet 5，判断密度靠 effort 区分（2026-07-05 修订落地）**：agent 的 `model` 只能设 Claude（GPT-5.5 是委托 codex 的行为，不是 agent 能跑的 model）。7 个 agent（SEPR 6 + optics_agent 的 optics-lead）frontmatter `model` **统一 `claude-sonnet-5[1m]`**。
+
+**为什么全 Sonnet 5 而非 Fable/Opus**（用户拍板 2026-07-05）：
+- **Fable 5 下架**：其安全分类器 refusal-fallback 会自动降级到 Opus 4.8，跨模型缓存不共享 → 整个前缀重写（真金白银浪费）；且 Fable $10/$50 太贵。
+- **Opus 4.8 下架**：长 session tool-call malformed ~1.5%（Sonnet ~0%），SEPR 正是长上下文+工具密集+CJK+gate 密集的最坏负载。
+- **Sonnet 5**：无 fallback 降级机制（不重缓存）、长上下文稳定、$2/$10 intro（到 8/31）比 Fable 便宜 3-5×。性能差距用 **effort 分档** + human gate + optics-lead 独立复算弥补。
+
+**effort 分档（不硬编进 frontmatter，走全局 + 启动参数）**：
+| 层级 | effort | 用途 |
+|---|---|---|
+| 全局默认（`settings.json` `effortLevel`）| `high` | 普通编排、读 capsule、报告终审、执行壳——Sonnet 5 官方默认，质量/成本/速度最稳 |
+| 复杂推导停机点 | `xhigh` | formalization 风险、物理推导审、跨报告矛盾、失败归因（Sonnet 5 coding/agentic 官方最佳档） |
+| 最终裁决停机点 | `max` | Gate3/4 终裁、result_class 定级、核心公式接受、E05 六维裁决、规则面变更前确认 |
+
+**effort 跟 session 走，不切 agent**：每个 gate 停机点本就默认断 session（省钱+防 malformed），那个新 session 直接 `--effort max`/`xhigh` 启动即可。不把 xhigh/max 持久写进 frontmatter（会让每个普通 turn 吃高成本）。
+
+**⚠️ 正确启动口径（必须带 `--agent`，否则 model/skills frontmatter 不生效）**：以某 agent 身份开对话，**必须**用 `--agent <name>` flag，例如：
+```powershell
+claude --agent main-agent --effort max
+```
+- **只有 `--agent` 才让 `.claude/agents/<name>.md` 的 frontmatter 生效**（`model: claude-sonnet-5[1m]` 切 model + `skills:` 预加载 + `permissionMode`）。
+- **`/main-agent` 斜杠命令是 skill 路径，只注入 skill markdown，不读 agent 文件的 frontmatter**——用它进身份 = 会话仍跑**启动时的全局 model**（可能是 Fable/Opus），frontmatter 的 sonnet **完全没生效**。这是隐性坑：横幅 model 与你以为的 agent model 不符时，说明你用错了启动方式。
+- `--agent` 已带 model，通常不必再显式 `--model`；只有要临时覆盖档位（如 E05 升 Fable）才加 `--model claude-fable-5[1m]`。
+- **开对话后第一件事：核对启动横幅 model = 该 agent 预期 model（sonnet-5）**。不符 → 你是 `/skill` 进的、没带 `--agent`，退出重开 `claude --agent <name>`。
+
+**安全阀（诚实边界）**：Sonnet 5 + max ≠ Fable + high，底层上限有真实差距，尤其 **E05 六维裁决**（自迭代最怕 reward hacking/自我偏好）。当前策略是「先跑通再加治理」——用稳定便宜的跑通；**若某高判断点反复不够（尤其 E05），再针对那一个点短 session 临时升 Fable**（`claude --model claude-fable-5[1m] --effort max`，接受降级重缓存的一次性成本），不是全局回退。
+
+Opus 4.8 仅在 Sonnet/Fable 都不可用时短会话少工具应急、不 resume 已污染 session。全表（W-flow/E-flow 逐步路由 + effort 映射 + CLI-MCP 口径 + 400k↔1M 升级）参考 `notes/sepr_model_routing_gpt55_claude_code-CN.md` + `notes/sepr_claude_effort_routing-CN.md`（后者裁决被本节 override：全 Sonnet 不留 Fable 常驻）。
+
 **codex 调用安全规范（硬约束）**：每次调用显式 `sandbox: workspace-write` + `approval-policy: untrusted`，**永不** `danger-full-access`；`cwd` 限 case 文件夹；secrets（secret.json/SSH/license）在 codex 可达范围外。codex 产物一律落盘，**Claude 验收（文件存在 + verifier PASS + 抽查）后才进报告**——codex 自述不作数，与对 Claude sub 的纪律一致。codex 调用计入 case 级资源上限（与 spawn 20 同口径）。
 
 ## Malformed tool-call 熔断（强制，2026-07-05）

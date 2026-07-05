@@ -55,6 +55,57 @@
 
 **当前状态**：Gate3 已放行。**下一步 main-agent 重跑四个 Layer1 verifier（新版应全 PASS）→ result_class 提升 diagnostic_only→simulation_completed（物理成功仍需 Layer3）→ 进 step05 对抗式审查**。不进 T3。放行 prompt 落盘 `.work/.todo/.../STEP05-放行prompt.md`。
 
+### step05-09 + Gate4（2026-07-05）
+
+**step05 对抗式审查**：8 个对抗探针（P1-P8）默认怀疑代码有错逐条证伪。核心结论：符号/时谐约定正确（对教材 Rayleigh 解析式独立核对，非靠 verifier PASS 反推）；负 ε 域 $a_l,b_l$ 是 $m$ 的偶函数（P8，机器零 1.76e-16，分支取值无关风险）；T2 真独立（AST 解析确认 `akimov_coeffs.py` 无 import `scattering`）。**未发现实质 bug，代码未改**。result_class 维持 `simulation_completed`。
+
+**step06（T3+T4）**：`fig3_loci.py` 六面板切片法求根（q_e 800点×eps 5001点/切片）；`fig3_contour_check.py` 独立二维 contour 法核对完备性——**Gate2 强制附加判据 PASS**：切片法 vs contour 支数逐面板一致（TM 12/12,12/12,11/11；TE 12/12,11/11,11/11），覆盖 >99.8%，无系统性漏根。`fig3_digitize.py` 从论文原图数字化 1982 个取样点。
+
+**step08 Layer3 量化对比**：全局 median=0.00746（**达标**）、p95=0.04258（**超标**）→ CONDITIONAL。nr（非共振支）六面板全部达标（median 0.0054-0.0074）；sr（共振支）TM 三面板 median 也略超（0.011-0.012），5/6 面板 p95 超标（0.052-0.131，仅 TE3 达标）。长尾定位：超阈点集中在**中大 $q_e$ 密集分支区**、$\varepsilon$ 常接近上边界 14.6（正大 ε 区）。main 呈现三选项交 Gate4 裁决，倾向选项1（接受）。
+
+**Gate4 通过**（optics_agent CC 独立审计，决定性证据，落盘 `GATE4-决定.md`）：
+- **独立求根 Δ=0.0000**：CC 用 Gate3 验证过的 `scattering.py` **完全绕开** `fig3_loci.py`，重新求 sr locus 根，与 SEPR CSV 逐点对比（TM l1/l2、TE l2 多切片，几十根）**全部 Δ=0.0000**——证复现曲线数学完全正确，超标非画错，归因数字化读图误差。
+- **裁决**：选项1（接受）+ 3 强制条件：① result_class=`partial_physical_match`；② 诚实边界如实写明（**纠正 main 两处转述漂移**——"负ε陡共振区"实为"正大ε(≈14.6)+中大q_e密集区"说反；"中位数只略超"漏报 TM 三面板 sr 中位数也超阈）；③ 不改阈值（否决选项2=verifier gaming），benchmark.yaml 标 sr 超标为 known/accepted。否选项3（边际收益低）。
+
+**step09 可复现性自检**：对 `fig3_loci.py` 求根做 5 类数值扰动（n_max截断/eps网格密度/q_e网格密度/brentq容差/随机种子），**全部稳定**——n_max 扰动偏移=0（结构无关，loci 单阶求根不调用截断）；Gate4 密集区（$\varepsilon>10$）在最粗测试网格下 sr 支数仍=9，无漏支无串支；brentq 容差扰动下根位置随容差单调收敛；无随机成分。**归因收敛为单因：数字化读图困难**（数据不支持"网格敏感"这一半原假设）。result_class 维持 `partial_physical_match`，排除"瞎猫碰死耗子"。
+
+### step10-11 收尾（2026-07-05）
+
+**step10 summary_and_report（main-agent 直接撰写，未 spawn sub-agent）**：产出 `full_report_draft.md`（192行，完整10步记录+Gate4三强制条件逐字复述+"什么没做透"+接力信息）、`brief_draft.md`（36行，PI摘要）、`self-iteration/2401.04146.skill-suggestion-draft.md`（4条建议，P0×1/P1×2/P2×1）、`self-iteration/2401.04146.blueprint-suggestion-draft.md`（本次无需蓝图）、`reproduction_test/mie/data/benchmark.yaml`（首次创建，含完整逐面板Layer3数值+独立复算验证记录+sr超标known/accepted标注）。定稿投递 `toEflow/2401.04146.skill-suggestion.md` + `toEflow/2401.04146.blueprint-suggestion.md`。
+
+**关键执行方式变通（如实记录）**：本步 main-agent 直接撰写全部文档，未经 sub-agent 中转。理由：本 case 已两次出现 main 转述漂移被 Gate4 独立审计纠正（见上），双报告需精确复述 Gate4 裁决数值和方向性结论，属高判断密度工作，再插一层 sub-agent 转述会重演同类风险。已提交 skill-suggestion 建议1（P0，main-agent 复述纪律）作为长期解法。
+
+**step11 main_agent_report（本次）**：写 `.work/run_manifest.yaml`（run_id/9个sub-agent spawn记录/max_depth_reached=2/未触发leaf/3条retry_fingerprint/result_class=partial_physical_match/4个human gate记录）+ `.work/.result/0703-01-akimov-mie-v1/capsule.md`（E-flow唯一输入，含六条首跑信号盘逐类核对+3条新发现信号+候选经验GUIDING×3/CAUTIONARY×3/FACT×2/PROCEDURE×1+断点清单+"什么没做透"）+ 本篇 WORK_LOG 增量更新 + 顶层 WORK_LOG.md 摘要表更新。
+
+**当前状态**：**step11 完成，workflow 收尾**。这是本次复现最后一个 human gate——等用户确认 `.work` 沙箱中哪些产物正式进 `.result/`（顶层最终交付区，区别于 `.work/.result/` 的 capsule 沙箱）。
+
+### 决策台账新增
+
+### D-10 Step10 执行方式变通：main-agent 直接撰写而非 spawn sub-agent（2026-07-05）
+- **背景**：本 case 已两次出现 main-agent 转述漂移被 Gate4 独立审计纠正（见 D-09）。标准流程 step10 应 spawn sub-agent 产双报告初稿。
+- **main-agent 判断**：双报告（尤其 Gate4 三强制条件的完整复述）属于高判断密度工作，若再 spawn sub-agent 转写一遍、main 再读 sub 的转写汇总，等于多一层转述风险。main-agent 本轮已亲自读过全部权威原文（GATE1-4决定/formalization.yaml/theory_check/derivation/selfcheck/layer3_report），有直接撰写的信息基础。
+- **执行**：main-agent 直接撰写 `full_report_draft.md`/`brief_draft.md`/skill-suggestion/blueprint-suggestion/benchmark.yaml，撰写时对照原始文件逐项核对数值（非凭记忆转写）。
+- **代价声明**：跳过了"sub-agent独立产出+main审校"的两级校验结构，已在报告开头"执行方式说明"节如实记录，作为一次性变通而非常规做法。长期解法已提交 skill-suggestion 建议1。
+- **落点**：`full_report_draft.md` 开头"执行方式说明"节；`toEflow/2401.04146.skill-suggestion.md` 建议1；memento pitfall `1a7973f6`。
+
+### D-11 Step11 后最终 human gate：.result 交付范围 + 额外中文 LaTeX 论文（2026-07-05）
+- **main 提议**：仅复制双报告+主报告进 `.result/2401.04146/`，代码/数据/图留在既定的 `reproduction_test/mie/` 工作区路径，不额外复制。
+- **用户裁决**：① **额外要求复制代码/数据/图**，做成完整自包含交付包（超出 main 的保守提议）；② **额外要求撰写一篇中文 LaTeX arXiv 风格论文**记录本次复现全过程（不在标准 step10/11 产出范围内，用户主动加做）。
+- **toEflow/ 处理时机**：用户裁决留给未来专门的 evolution-agent 批次统一处理（符合 CLAUDE.md"只增不删"缓冲区设计），不现在转发给 optics_agent；但要求在本次回复中标注路径以便随时查看。
+- **执行**：
+  - 代码（10个脚本）+ 数据（9个CSV+benchmark.yaml）+ 图（4张）复制进 `.result/2401.04146/{code,data,figures}/`（保留 `reproduction_test/mie/` 工作区原件不动，两处并存）。
+  - 撰写 `.result/2401.04146/paper_cn/main.tex`（约 300 行，含摘要/引言/理论/数值实现与多层验证/结果/讨论-诚实边界/结论），用 `ctex` + `xelatex` 编译为 `main.pdf`（13页）。首次编译遇到 Layer1 验证表格 183pt 溢出，改用 `tabularx`+`p{}` 固定列宽修复；三次编译消除交叉引用警告，最终编译干净（0 error，仅 1 处轻微 overfull 可接受）。
+- **落点**：`.result/2401.04146/`（完整交付包）、`.result/reports/main-0703-01-akimov-mie-v1-20260705-02.md`；memento session_summary `690f9a95`（pinned）。
+- **当前状态**：**本次复现全流程完整闭环**，无待处理的 human gate。toEflow/ 两份建议文件路径见下方"当前 toEflow 待处理清单"。
+
+---
+
+## 当前 toEflow 待处理清单（用户要求标注，供随时查看）
+
+- `toEflow/2401.04146.skill-suggestion.md`：4 条 skill 改进建议（P0×1 main-agent复述纪律缺失 / P1×2 / P2×1 记录性），留给未来 evolution-agent 批次统一处理。
+- `toEflow/2401.04146.blueprint-suggestion.md`：本次无需蓝图（纯Python，记录性文件）。
+- `toEflow/记忆分层架构-扶正需求.md`：Gate2 期间记录的框架规则扶正需求（早于本 case 收尾），仍待处理。
+
 ---
 
 ## 决策全账本（用户没时间盯对话 → 所有建议/裁决/落点在此，读此即可恢复，不必翻对话）

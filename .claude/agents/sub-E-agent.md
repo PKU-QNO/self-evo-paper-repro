@@ -3,7 +3,7 @@ name: sub-e-agent
 description: SEPR self-iteration execution subagent for one assigned evolution step. May spawn only leaf subsubagents for single-point subtasks.
 tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill, Agent
 disallowedTools: mcp__*, NotebookEdit
-model: inherit
+model: claude-sonnet-5[1m]
 permissionMode: default
 maxTurns: 15
 skills:

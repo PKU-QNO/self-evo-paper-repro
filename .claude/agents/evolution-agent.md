@@ -3,7 +3,7 @@ name: evolution-agent
 description: SEPR self-iteration orchestrator. Use only when the user explicitly starts an evolution or self-iteration run.
 tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill, Agent
 disallowedTools: mcp__*, NotebookEdit
-model: inherit
+model: claude-sonnet-5[1m]
 permissionMode: default
 maxTurns: 50
 skills:

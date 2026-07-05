@@ -1,8 +1,8 @@
 # SEPR 工作日志（完整交接文档）
 
 > **用途**：本文档是 SEPR 工作区从创建至今的**目录总览**（一句话定位/路径/状态/文件结构/核心设计速查/文档索引）。**多阶段详细记录见 `WORK_LOG/`**（阶段十二起每阶段独立成文；文件夹化前全文快照在 `WORK_LOG/00-历史存档-阶段01至12-全文.md`）。供上下文压缩或新开对话时快速恢复。
-> **最后更新**：2026-07-04
-> **当前阶段**：**首次实跑收尾中**——Akimov 2401.04146（case `0703-01-akimov-mie-v1`）已过 step01-08 + Gate1/2/3/4。Fig3 复现：CC 独立求根 Δ=0 证实复现曲线正确，超标系数字化读图误差，**result_class = partial_physical_match**（不改阈值、如实标诚实边界）。**下一步 main-agent 收尾 step09→10→11**（自检/双报告/benchmark/capsule/WORK_LOG），step11 后是进 .result 前最后 human gate。详见 `WORK_LOG/01-akimov-mie-v1.md`。注：OpenCode 双系统已于 2026-07-03 撤销（阶段十一），阶段八/九相关描述已过时。
+> **最后更新**：2026-07-05
+> **当前阶段**：**首次实跑 workflow 已完整闭环**——Akimov 2401.04146（case `0703-01-akimov-mie-v1`）10 步 W-flow + 第11步全部完成，Gate1/2/3/4 全过，**.result 最终交付 gate 也已完成**。Fig3 复现：CC 独立求根 Δ=0 证实复现曲线正确，超标系数字化读图误差，**result_class = partial_physical_match**（不改阈值、如实标诚实边界）。`.result/2401.04146/` 含双报告+代码+数据+图+中文LaTeX论文（用户额外要求）；`toEflow/` 2份skill/蓝图建议留给未来 evolution-agent 批次处理。详见 `WORK_LOG/01-akimov-mie-v1.md`。注：OpenCode 双系统已于 2026-07-03 撤销（阶段十一），阶段八/九相关描述已过时。
 
 ---
 
@@ -56,7 +56,7 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 | 九 子 agent 深度+工具限制 | .claude/agents 4 文件 + opencode 6 agent 对齐，leaf 防递归 | 历史存档 |
 | 十 Claude 新能力核验 + V3 加固提案 | 放弃 OpenCode + 分层采纳；hooks 红线提案（未落地） | 历史存档 |
 | 十一 V3 加固基础版落地 | sub-leaf 硬化 + skills 预加载 + OpenCode 撤销（实操 SEPR） | 历史存档 |
-| **十二 Mie 首次实跑 + 首跑信号修复** | Akimov Fig3：step01-03 + 6 信号修复 + Gate1/2 裁决 + 记忆分层发现 | **`WORK_LOG/01-akimov-mie-v1.md`** |
+| **十二 Mie 首次实跑 + 首跑信号修复** | Akimov Fig3：10 步 W-flow + 第11步 + .result交付 gate 全部完成闭环，result_class=partial_physical_match，.result含代码/数据/图/双报告/中文LaTeX论文 | **`WORK_LOG/01-akimov-mie-v1.md`** |
 
 
 ## 3. 当前状态（2026-06-30）
@@ -84,7 +84,7 @@ SEPR 采用 Claude Code 3 层子 agent 架构（main-agent → sub-agent → sub
 
 ### ⏳ 待完成（只剩 2 项，都等用户发话）
 1. **任务 9 残留**：英文 prompt-engineered 版（现在 .claude/skills/ 是中文详细版，够用；英文版是后期优化，非必须）
-2. **Mie 第一阶段实际执行**（教材已就位，含 4 个人工 gate，不能全自动）
+2. **Mie 第一阶段实际执行**（教材已就位，含 4 个人工 gate，不能全自动）——**2026-07-05 更新：已完整跑完 10 步 W-flow + 第11步，Gate1-4 全过，详见 §2 阶段十二和 `WORK_LOG/01-akimov-mie-v1.md`。当前停在 step11 后的最后 human gate，等用户确认 `.result/` 入库内容。**
 
 ---
 

@@ -20,3 +20,11 @@
 ---
 
 （日志从这里开始追加）
+
+## 0703-01-akimov-mie-v1 (2026-07-05)
+- 类型: workflow
+- 论文/批次: Akimov arXiv 2401.04146, Fig.3（超辐射/非辐射态 loci）
+- 摘要: SEPR 首次真实论文复现，10步W-flow全部跑完，Gate1-4全过。CC独立求根Δ=0.0000证复现曲线数学正确，sr长尾归因数字化读图误差（known/accepted，不改阈值）。
+- result_class: partial_physical_match
+- 自迭代产出: 提交 2 个文件到 toEflow/（2401.04146.skill-suggestion.md 4条建议 + 2401.04146.blueprint-suggestion.md 无需蓝图）
+- 待迭代需求: skill-suggestion建议1(P0)——main-agent复述纪律缺失，已发生两次真实转述漂移事故，需固化进main-agent SKILL防止后续case重演

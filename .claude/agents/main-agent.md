@@ -3,7 +3,7 @@ name: main-agent
 description: SEPR paper-reproduction orchestrator. Use when starting or continuing a new paper or figure reproduction workflow.
 tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill, Agent
 disallowedTools: mcp__*, NotebookEdit
-model: inherit
+model: claude-sonnet-5[1m]
 permissionMode: default
 maxTurns: 50
 skills:
