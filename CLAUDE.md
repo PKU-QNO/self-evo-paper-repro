@@ -67,7 +67,37 @@ claude --effort max        # 然后会话内： /model claude-sonnet-5[1m] → /
 
 Opus 4.8 仅在 Sonnet/Fable 都不可用时短会话少工具应急、不 resume 已污染 session。全表（W-flow/E-flow 逐步路由 + effort 映射 + CLI-MCP 口径 + 400k↔1M 升级）参考 `notes/sepr_model_routing_gpt55_claude_code-CN.md` + `notes/sepr_claude_effort_routing-CN.md`（后者裁决被本节 override：全 Sonnet 不留 Fable 常驻）。
 
-**codex 调用安全规范（硬约束）**：每次调用显式 `sandbox: workspace-write` + `approval-policy: untrusted`，**永不** `danger-full-access`；`cwd` 限 case 文件夹；secrets（secret.json/SSH/license）在 codex 可达范围外。codex 产物一律落盘，**Claude 验收（文件存在 + verifier PASS + 抽查）后才进报告**——codex 自述不作数，与对 Claude sub 的纪律一致。codex 调用计入 case 级资源上限（与 spawn 20 同口径）。
+**codex 调用安全规范（硬约束）**：显式 `sandbox: workspace-write`，**永不** `danger-full-access`；`cwd` 限 case 文件夹；secrets（secret.json/SSH/license）在 codex 可达范围外。codex 产物一律落盘，**Claude 验收（文件存在 + verifier PASS + 抽查）后才进报告**——codex 自述不作数，与对 Claude sub 的纪律一致。codex 调用计入 case 级资源上限（与 spawn 20 同口径）。approval 口径见下节 §两条委托通道。
+
+### 两条委托通道 + 11 步分档（2026-07-07 用户批准，实测确立）
+
+**⚠️ approval 口径修正**：架构委托走 **bash `codex exec`**（非交互），approval 必须 **`never`** 而非 `untrusted`——`untrusted`/`on-request` 会在非交互流卡等一个永不到来的人工批准挂死；安全不靠 approval 靠 sandbox（`never` + `workspace-write`，实测 case 外写被拦）。`untrusted` 只适用于**交互式 MCP `codex-cli`**（Claude 当场读答案的一次性问答）。**永不** `--dangerously-bypass-*`。
+
+**通道选择**：产物要落盘、要被后续步骤消费 → `codex exec`（独有 `--add-dir`/`--output-schema`/`-o`/`--json`/`-p profile`，MCP 都没有）。Claude 顶端身份要当场读 codex 答案（核 API/查文档）→ MCP。
+
+**codex exec 模板**（结果落盘不走 stdout，防截断）：
+```bash
+codex exec -C <case> --add-dir <shared只读需要的> \
+  -s workspace-write -c approval_policy="never" \
+  --output-schema <8字段schema.json> -o <report> --json > <events.jsonl> \
+  -m gpt-5.5 "<全局模板 + 局部任务 + 论文上下文>"
+```
+
+**11 步分档**（依据：判断密度 + 错误可发现性 + 是否压 gate/result_class）：
+
+| 档 | 步 | 谁执行 | 理由 |
+|---|---|---|---|
+| ✅ **A 整步交 codex** | 01 pdf_preprocessing / 06 run_and_monitor / 07 physical_verification | codex exec | 全 `agent→script`，确定性已固化成脚本，agent 只驱动 |
+| ❌ **B 绝不交** | 05 theory_check / 08 result_analysis / 09 reproducibility_selfcheck / 11 main_agent_report | **Claude sub / main** | 高判断密度 + 错误难被下游抓 + 压 gate3/gate4/result_class；承载 verifier+可审计卖点 |
+| ⚠️ **C 拆开** | 02(读搜→codex，参数→Claude gate1) / 03(拆分→codex，formalization→Claude gate2) / 04(写码→codex，推导→Claude) / 10(初稿→codex，记忆+result_class+复述→Claude) | 混合 | 机械层交 codex，判断层/契约写留 Claude |
+
+**判据一句**：`agent→script` 步整步交 codex exec；高判断裁决步（05/08/09/11）绝不交；混合步（02/03/04/10）机械层交 + 判断层留 Claude。「保留 Claude 子 agent 特定情况用」的**特定情况 = B 档四步 + C 档判断层**。
+
+**旁路架构（不改已审计的三层 Claude 结构）**：codex exec 是给 main-agent **加一条委托旁路**，不替换 `main→sub→leaf`。Claude sub（B档+判断层）继续用 `.claude/agents/*.md`；codex 执行步内部的机械叶子活由 **codex 原生 subagent**（sub-sub）在 codex 侧 spawn，不碰 Claude 叶子层硬化（C1）。codex 预制 agent 定义在 **`.codex/agents/*.toml`**（`name`/`description`/`developer_instructions` 必需，`model`/`sandbox_mode`/`mcp_servers` 可选），与 `.claude/agents/*.md` 并存不冲突。
+
+**分层 model**：Claude 层全 `claude-sonnet-5[1m]`；codex 执行层默认继承父 config（`gpt-5.5`）；sub-sub 机械活可 pin `gpt-5.4-mini` 省钱。诚实边界：codex 子 agent 不能自证精确 model 名，靠 config/profile/toml `model` 字段锁定，不靠自述。
+
+**分期落地**（先跑通再加治理）：一期=写死规则（本节 + `notes/codex_exec_delegation_plan-CN.md` + `.codex/agents/` 原型，不改三层架构）；二期=下个真 case 用 01 pdf_preprocessing 试 codex exec，Claude 验收后扩 06/07；三期=C 档拆分 + profile 锁 mini + 沉淀 evolution skill。完整方案见 `optics_agent/notes/codex_exec_delegation_plan-CN.md`。
 
 ## Malformed tool-call 熔断（强制，2026-07-05）
 
