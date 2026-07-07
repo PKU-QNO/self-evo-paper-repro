@@ -2,7 +2,7 @@
 
 > **用途**：本文档是 SEPR 工作区从创建至今的**目录总览**（一句话定位/路径/状态/文件结构/核心设计速查/文档索引）。**多阶段详细记录见 `WORK_LOG/`**（阶段十二起每阶段独立成文；文件夹化前全文快照在 `WORK_LOG/00-历史存档-阶段01至12-全文.md`）。供上下文压缩或新开对话时快速恢复。
 > **最后更新**：2026-07-05
-> **当前阶段**：**首次实跑 workflow 已完整闭环**——Akimov 2401.04146（case `0703-01-akimov-mie-v1`）10 步 W-flow + 第11步全部完成，Gate1/2/3/4 全过，**.result 最终交付 gate 也已完成**。Fig3 复现：CC 独立求根 Δ=0 证实复现曲线正确，超标系数字化读图误差，**result_class = partial_physical_match**（不改阈值、如实标诚实边界）。`.result/2401.04146/` 含双报告+代码+数据+图+中文LaTeX论文（用户额外要求）；`toEflow/` 2份skill/蓝图建议留给未来 evolution-agent 批次处理。详见 `WORK_LOG/01-akimov-mie-v1.md`。注：OpenCode 双系统已于 2026-07-03 撤销（阶段十一），阶段八/九相关描述已过时。
+> **当前阶段**：**首次实跑 workflow 已完整闭环 + main-agent 自我诊断已人工落地**——Akimov 2401.04146（case `0703-01-akimov-mie-v1`）10 步 W-flow + 第11步全部完成，Gate1/2/3/4 全过，**.result 最终交付 gate 也已完成**。Fig3 复现：CC 独立求根 Δ=0 证实复现曲线正确，超标系数字化读图误差，**result_class = partial_physical_match**（不改阈值、如实标诚实边界）。`.result/2401.04146/` 含双报告+代码+数据+图+中文LaTeX论文（用户额外要求）。收尾后 main-agent 主动自我复盘暴露"用反补救方向"（跳过 sub-agent 校验层而非加独立核对）等问题，optics_agent CC 判定其中 P0 项（复述纪律缺失）不必等 evolution batch，已以 **human_intervention** 直接落地 `main-agent/SKILL.md`（新增"偏离流程先问gate"+"复述纪律"两条规则，`.claude`+`.human` 双写，quick_validate 通过）。`toEflow/` 中该建议已标记落地，其余建议仍留给未来 evolution-agent 批次处理。详见 `WORK_LOG/01-akimov-mie-v1.md`。注：OpenCode 双系统已于 2026-07-03 撤销（阶段十一），阶段八/九相关描述已过时。
 
 ---
 

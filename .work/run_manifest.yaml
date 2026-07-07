@@ -112,6 +112,14 @@ human_gates:
   - gate: "Gate4（论文图误差核对，step08末）"
     decision: "选项1接受+3强制条件，否决选项2（不改阈值）"
     file: ".work/.todo/2401.04146/0703-01-akimov-mie-v1/GATE4-决定.md"
+  - gate: "最终交付 gate（step11 后，.result 交付范围确认）"
+    decision: >
+      用户超出 main-agent 保守提议，追加两项：①代码(10脚本)/数据(9CSV+benchmark.yaml)/图(4张)
+      额外复制进 .result/2401.04146/{code,data,figures}/ 做自包含交付包（不只双报告）；
+      ②撰写一篇中文 LaTeX arXiv 风格论文（paper_cn/main.tex + main.pdf，xelatex+ctex 编译，13页，
+      0 error）记录本次复现全过程，非标准 step10/11 产出范围。
+    file: ".work/.sub-report/main-0703-01-akimov-mie-v1-20260705-02.md（本报告 §5/§6 提议 + 用户在对话中裁决，未单独落 GATE 文件）"
+    additional_deliverables: ".result/2401.04146/{code/,data/,figures/,paper_cn/main.tex,paper_cn/main.pdf}"
 
 workflow_failure_triggered: false
 notes: >

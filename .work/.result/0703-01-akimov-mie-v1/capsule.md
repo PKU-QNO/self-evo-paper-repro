@@ -16,6 +16,8 @@ evidence_refs:
   - "reproduction_test/mie/data/fig3_layer3_metrics.csv"
   - ".work/.todo/2401.04146/0703-01-akimov-mie-v1/full_report_draft.md"
   - ".work/run_manifest.yaml"
+  - ".result/2401.04146/paper_cn/main.tex"
+  - ".claude/skills/main-agent/SKILL.md（human_intervention 补丁：偏离流程先问gate + 复述纪律）"
 provenance:
   source_artifact: "case 0703-01-akimov-mie-v1 全部 step01-11 产物，2026-07-03 至 2026-07-05"
   evidence_type: "verifier原始输出 + 独立复算(optics_agent CC) + 数值扰动测试 + 人工gate裁决"
@@ -136,3 +138,9 @@ Gate4 的决定性证据（独立求根 Δ=0.0000）是 optics_agent CC 临场�
 - 本 capsule 对应的 skill 草稿见 `toEflow/2401.04146.skill-suggestion.md`（4条建议，P0×1/P1×2/P2×1）+ `toEflow/2401.04146.blueprint-suggestion.md`（无需蓝图）。
 - 三级治理归类：本 case 单次 + 有 verifier/独立复算支撑 = **Tier-2**（candidate pending，需人审），不满足 Tier-3 Absorb 条件（需 ≥3 case + replay）。
 - 本 case 是 SEPR 框架的**首次真实论文复现**，多条经验缺少跨 case 验证，evolution-agent 处理时应偏保守（Save/Improve 为主，避免单 case 就 Absorb 进正式 skill）。
+- **建议1（main-agent 复述纪律）已不再是 candidate pending**：optics_agent CC 上游审计后判定该建议不适用三级治理的"攒够 case 再泛化"逻辑（显而易见的结构性漏洞，多等一个 case 只是让风险重演），已于 2026-07-05 以 **human_intervention** 方式直接落地 `main-agent/SKILL.md`（`.claude` + `.human` 双写，quick_validate 通过）：新增"关键节点必须停"第5条（偏离既定 workflow 步骤/跳过校验层需先问 gate）+"复述纪律"独立小节（复述量化/方向性结论须现场核对原文并标来源）。evolution-agent 未来处理 `toEflow/2401.04146.skill-suggestion.md` 时，建议1 应标记为**已落地**，不再重复处理；建议2/3/4 状态不变。
+
+## 九、本 case 收尾后的追加交付与自我诊断（2026-07-05 第二轮 human gate）
+
+- **.result 交付范围扩大**：用户在 step11 后的最终 gate 追加要求，超出 main-agent 保守提议——①代码/数据/图额外复制进 `.result/2401.04146/{code,data,figures}/` 做自包含交付包；②撰写中文 LaTeX arXiv 风格论文 `paper_cn/main.tex`+`main.pdf`（13页，xelatex+ctex，0 error）。详见 `.work/run_manifest.yaml` 新增的"最终交付 gate"记录。
+- **main-agent 自我诊断（重要，供 evolution-agent 参考）**：main-agent 在本 case 收尾后主动做了一次自我复盘，发现 step10"跳过 sub-agent 改自己全写"的补救方向本身有误（用于防出错的两级结构被直接砍掉，而非增加独立核对）；本 session 全程未使用 CLAUDE.md 当天生效的 codex 委托规则（LaTeX 撰写/文件复制类机械操作本该发 codex，实际全部亲自用 Bash/Write 完成，此项按用户要求暂缓处理，等新方案）；PDF 未做肉眼渲染核验（环境缺 poppler-utils，optics_agent CC 侧同样缺，已知残留风险，需人工自行打开确认）；`.result/mie/` 路径想当然写错后 rmdir 重建；图片存在三处冗余拷贝（`reproduction_test/mie/figures/` + `.result/2401.04146/figures/` + `paper_cn/figures/`，未用 `\graphicspath` 省一份）。上述除 codex 委托规则外均已通过本次 human_intervention 处理或记录在案，不阻塞本 case 收尾。

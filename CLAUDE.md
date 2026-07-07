@@ -54,14 +54,14 @@ Opus 不稳定时的应急方案：改 Claude Code 的 URL/API 指向 DeepSeek�
 
 **effort 跟 session 走，不切 agent**：每个 gate 停机点本就默认断 session（省钱+防 malformed），那个新 session 直接 `--effort max`/`xhigh` 启动即可。不把 xhigh/max 持久写进 frontmatter（会让每个普通 turn 吃高成本）。
 
-**⚠️ 正确启动口径（必须带 `--agent`，否则 model/skills frontmatter 不生效）**：以某 agent 身份开对话，**必须**用 `--agent <name>` flag，例如：
+**⚠️ 启动确认 model = sonnet-5（两条路都行，别只靠 frontmatter）**：`.claude/agents/<name>.md` 的 `model: claude-sonnet-5[1m]` **只在 `claude --agent <name>` 启动时自动生效**；用 `/main-agent` 等斜杠命令进身份走 skill 路径、**不读 agent frontmatter**，会话跑的是**启动时的全局 model**（可能是 Fable/Opus）。任选其一：
 ```powershell
+# 路 A：--agent 自动切 model + 预加载 skill + permissionMode
 claude --agent main-agent --effort max
+# 路 B：普通启动 + 斜杠进身份，但先手动切 model
+claude --effort max        # 然后会话内： /model claude-sonnet-5[1m] → /main-agent
 ```
-- **只有 `--agent` 才让 `.claude/agents/<name>.md` 的 frontmatter 生效**（`model: claude-sonnet-5[1m]` 切 model + `skills:` 预加载 + `permissionMode`）。
-- **`/main-agent` 斜杠命令是 skill 路径，只注入 skill markdown，不读 agent 文件的 frontmatter**——用它进身份 = 会话仍跑**启动时的全局 model**（可能是 Fable/Opus），frontmatter 的 sonnet **完全没生效**。这是隐性坑：横幅 model 与你以为的 agent model 不符时，说明你用错了启动方式。
-- `--agent` 已带 model，通常不必再显式 `--model`；只有要临时覆盖档位（如 E05 升 Fable）才加 `--model claude-fable-5[1m]`。
-- **开对话后第一件事：核对启动横幅 model = 该 agent 预期 model（sonnet-5）**。不符 → 你是 `/skill` 进的、没带 `--agent`，退出重开 `claude --agent <name>`。
+**开对话第一件事：看启动横幅 model**。非 sonnet-5 且走的是斜杠路径 → 补一句 `/model claude-sonnet-5[1m]`，不必退出重开。（注：Agent tool spawn 的 sub-agent/leaf 读 frontmatter，sonnet 已自动生效，无此问题——只有顶端身份 main/evolution 手动进身份时要注意。）
 
 **安全阀（诚实边界）**：Sonnet 5 + max ≠ Fable + high，底层上限有真实差距，尤其 **E05 六维裁决**（自迭代最怕 reward hacking/自我偏好）。当前策略是「先跑通再加治理」——用稳定便宜的跑通；**若某高判断点反复不够（尤其 E05），再针对那一个点短 session 临时升 Fable**（`claude --model claude-fable-5[1m] --effort max`，接受降级重缓存的一次性成本），不是全局回退。
 

@@ -98,6 +98,33 @@
 - **落点**：`.result/2401.04146/`（完整交付包）、`.result/reports/main-0703-01-akimov-mie-v1-20260705-02.md`；memento session_summary `690f9a95`（pinned）。
 - **当前状态**：**本次复现全流程完整闭环**，无待处理的 human gate。toEflow/ 两份建议文件路径见下方"当前 toEflow 待处理清单"。
 
+### D-12 main-agent 自我诊断 + optics_agent CC 独立审计 + human_intervention 落地（2026-07-05）
+
+- **背景**：D-11 收尾后，用户要求 main-agent 主动自我复盘"这次暴露了哪些问题、哪些还待解决"。main-agent 的自我诊断质量较高，主动指出了几点 optics_agent CC 独立审计时未发现的问题。
+- **main-agent 自我诊断要点**（完整原文见对话记录，此处摘要）：
+  1. **补救方向本身有误**：D-10 跳过 sub-agent 改自己全写，本质是把"防主 agent 出错的两级结构"直接砍掉，而非增加独立核对——某层被证实出错时应加独立核对，不是去掉这层。且是先斩后奏，未先问 gate 就自主决定。
+  2. **codex 委托规则本 session 完全未遵守**：当天生效的 CLAUDE.md 规则要求机械读写/执行发 codex-cli，但本 session 的 `cp`/`mkdir`/LaTeX 撰写/xelatex 编译调试全部亲自用 Bash/Write 完成。**用户决定此项暂缓处理，另有新方案，不在本轮改动范围内**。
+  3. 路径想当然写错（先建 `.result/mie/` 后发现应为 `.result/<paper>/`，rmdir 重建）。
+  4. **审计产物滞后**：`run_manifest.yaml`/`capsule.md` 在 step11 写定后，D-11 追加交付（代码/数据/图/LaTeX论文）未回填登记，违反"run_manifest 是审计索引"的自设原则。
+  5. PDF 未肉眼核验（环境缺 poppler-utils，只看编译日志 0 error，未确认实际排版渲染），汇报时信息披露不完整。
+  6. AskUserQuestion 选项设计覆盖面不够（漏了"写论文"这个后来被用户用"其他"提出的需求）。
+  7. 图片三处冗余拷贝（`reproduction_test/mie/figures/` + `.result/2401.04146/figures/` + `paper_cn/figures/`），本可用 `\graphicspath` 省一份。
+  8. **认识论隐忧**：main 自己指出"main 转述漂移过两次"这个说法是从 `GATE4-决定.md` 里"纠正 main 转述"字样转引的，未回去核实更早的原始措辞——已被写入 skill-suggestion/capsule/WORK_LOG/LaTeX 论文四处放大传播。
+- **optics_agent CC 裁决**：
+  - 对第 8 点：`GATE4-决定.md` 是 CC 一手写的原始文件（非转引），"正大ε≈14.6非负ε"、"TM中位数也超阈"两处均为 CC 当场核对原始 CSV/verdict 数据后所写，main 引用该文件无失真放大风险，**可放心继续沿用**。
+  - 对第 1 点：诊断准确，采纳。但补救方案不认可——不应要求"以后必须 spawn sub-agent"（形式主义），而应要求**程序性硬约束**：main-agent 判断需偏离既定 workflow 步骤（尤其跳过任何校验层）时必须先停下问 human gate，不得自主决定、事后声明代价了事。
+  - 对第 4/5/7 点：现在就地修补，不需要新开 gate（非"进 .result"动作）。
+  - 对第 6 点：无需改动，属正常的人类需求想象力局限，非结构性问题。
+  - **建议1（复述纪律）的治理路径特殊处理**：不适用三级治理"攒够 case 再泛化"逻辑——那套逻辑是为"是否泛化临场发明的做法"设计的，用在"显而易见的结构性漏洞"上只会让风险在下一 case 重演。判定为**human_intervention 立即落地**，不等 evolution batch。
+- **执行**（human_intervention，非 evolution-agent 自迭代）：
+  - `main-agent/SKILL.md`（`.claude`+`.human` 双写）新增"关键节点必须停"第5条（偏离流程先问gate，含 D-10 反例）+ 独立小节"复述纪律"（复述量化/方向性结论须现场核对原文+标来源+禁自然语言转写）。`PYTHONUTF8=1 python quick_validate.py` 全通过（默认 GBK 解码在含中文 UTF-8 SKILL.md 上报错，非内容问题，已存 pitfall `aabfddd2`）。
+  - `.work/run_manifest.yaml` 补登记"最终交付 gate"记录（D-11 追加的代码/数据/图/LaTeX论文）。
+  - `.work/.result/0703-01-akimov-mie-v1/capsule.md` §评论新增 evidence_refs 两条 + 新增 §8 建议1落地状态说明 + §9 本轮自我诊断与追加交付记录。
+  - `toEflow/2401.04146.skill-suggestion.md` 追加"状态更新"节（只增不删），标注建议1已落地不再是 candidate pending，建议2/3/4 状态不变。
+  - **codex 委托规则违规项**：本轮不处理，用户另有新方案，留待后续。
+- **落点**：`main-agent/SKILL.md`（`.claude`+`.human`）、`.work/run_manifest.yaml`、`capsule.md`、`toEflow/2401.04146.skill-suggestion.md`、memento 决策记忆（optics_agent 侧）+ pitfall `aabfddd2`。
+- **当前状态**：本 case 完全收尾，无待处理 human gate。codex 委托规则的新方案待用户后续提出。
+
 ---
 
 ## 当前 toEflow 待处理清单（用户要求标注，供随时查看）
