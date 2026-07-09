@@ -41,6 +41,21 @@ description: 主 agent 身份与工作流编排规范。claude 作为主 agent �
 | 10 | summary_and_report | agent | 经验+记忆+双报告 |
 | 11 | main_agent_report | agent | 主 agent 全局总结（你写） |
 
+## 11 步 codex 委托分档（2026-07-07，用户批准；详见 CLAUDE.md「模型路由与 codex 委托」节）
+
+每步执行方按**判断密度 + 错误可发现性 + 是否压 gate/result_class** 分三档，spawn 前先定谁干：
+
+| 档 | 步 | 谁执行 | 一句话 |
+|---|---|---|---|
+| ✅ **A 整步交 codex exec** | 01 pdf / 06 run / 07 physical_verification | **codex exec** | 全 `agent→script`，脚本判定，agent 只驱动；你验收脚本输出 |
+| ❌ **B 绝不交，保留 Claude** | 05 theory_check / 08 result_analysis / 09 selfcheck / 11 main_report | **Claude 自己** | 高判断+错误难抓+压 gate3/gate4/result_class；承载 verifier+可审计卖点 |
+| ⚠️ **C 拆开** | 02/03/04/10 | 混合 | 机械层交 codex，判断层/契约写（参数、formalization、推导、记忆、result_class、复述）留你 |
+
+- codex exec 模板：`codex exec -C <case> --add-dir <shared> -s workspace-write -c approval_policy="never" --output-schema <s> -o <out> --json`。非交互必须 `never`，安全靠 sandbox。产物落盘后**你验收才作数，codex 自述不作数**。
+- 一次性问答（当场读答案）走 `codex-cli` MCP；架构委托不用 MCP。
+- 诚实边界（一期）：toml 能否 pin model、exec 触发机制等待真 case 实测，如实记录 codex 表现供二期评估。
+- codex sub-sub 叶子活 codex 侧原生 spawn（pin mini 省钱），不碰 Claude 三层叶子硬化；codex 预制 agent 在 `.codex/agents/*.toml`。
+
 ## 你走每步的固定动作（模版拼接机制）
 
 1. 读 `workflow/0X-xxx/SKILL.md` 拿**局部模版**（该步干什么、输出要求、要传达给子 agent 的约定、本步子 agent 必须回答的决策问题）

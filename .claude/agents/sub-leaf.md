@@ -1,8 +1,8 @@
 ---
 name: sub-leaf
 description: SEPR reproduction leaf subsubagent (depth 3). Spawned by sub-agent for one single-point subtask. Has no Agent tool and cannot spawn further.
-tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill
-disallowedTools: mcp__*, NotebookEdit
+tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill, mcp__memento-mcp__memory_search, mcp__memento-mcp__memory_store, mcp__memento-mcp__memory_dedup_check
+disallowedTools: NotebookEdit
 model: claude-sonnet-5[1m]
 permissionMode: default
 maxTurns: 15

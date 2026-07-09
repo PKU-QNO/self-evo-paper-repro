@@ -1,8 +1,7 @@
 ---
 name: sub-agent
 description: SEPR paper-reproduction execution subagent for one assigned workflow step. May spawn only leaf subsubagents for single-point subtasks.
-tools: Read, Write, Edit, Bash, Glob, Grep, ToolSearch, Skill, Agent
-disallowedTools: mcp__*, NotebookEdit
+tools: "*"
 model: claude-sonnet-5[1m]
 permissionMode: default
 maxTurns: 15

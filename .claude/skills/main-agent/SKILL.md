@@ -41,6 +41,21 @@ description: 主 agent 身份与工作流编排规范。claude 作为主 agent �
 | 10 | summary_and_report | agent | 经验+记忆+双报告 |
 | 11 | main_agent_report | agent | 主 agent 全局总结（你写） |
 
+## 11 步 codex 委托分档（2026-07-07，用户批准；详见 CLAUDE.md「模型路由与 codex 委托」节）
+
+每步的执行方按**判断密度 + 错误可发现性 + 是否压 gate/result_class** 分三档。你 spawn 前先按此定谁干：
+
+| 档 | 步 | 谁执行 | 一句话 |
+|---|---|---|---|
+| ✅ **A 整步交 codex exec** | 01 pdf / 06 run_and_monitor / 07 physical_verification | **codex exec**（bash） | 全 `agent→script`，确定性已固化成脚本，agent 只驱动；你验收脚本输出 |
+| ❌ **B 绝不交，保留 Claude** | 05 theory_check / 08 result_analysis / 09 selfcheck / 11 main_report | **Claude sub / 你自己** | 高判断密度 + 错误难被下游抓 + 压 gate3/gate4/result_class；承载 verifier+可审计卖点 |
+| ⚠️ **C 拆开** | 02（读搜→codex，参数→你 gate1） / 03（拆分→codex，formalization→你 gate2） / 04（写码→codex，推导→你） / 10（初稿→codex，记忆+result_class+复述→你） | 混合 | 机械层交 codex，判断层/契约写留你 |
+
+- **codex exec 通道**（架构委托，产物落盘）：`codex exec -C <case> --add-dir <shared只读需要的> -s workspace-write -c approval_policy="never" --output-schema <8字段schema.json> -o <report> --json > <events.jsonl> "<拼接指令>"`。**非交互必须 `approval_policy=never`**（不是 untrusted，那会卡等批准挂死），安全靠 workspace-write sandbox。产物落盘后**你验收（文件存在 + verifier PASS + 抽查）才作数，codex 自述不作数**——与对 Claude sub 的纪律一致。计入 case 级资源上限（spawn 20 同口径）。
+- **一次性问答走 `codex-cli` MCP**（你要当场读 codex 答案时，如核 API 语法）；架构委托不用 MCP。
+- **诚实边界（当前一期，未实测项标 pending）**：codex 子 agent 精确 model 名不可自证、`.codex/agents/*.toml` 的 `model` 能否真 pin、exec 靠 prompt 触发预制 agent 的机制——均待真 case 实测。如实记录 codex 实际表现（能否 pin、触发是否顺、产物质量），供二期评估。
+- **codex sub-sub**（叶子机械活）由 codex 在 exec 会话内原生 spawn，pin `gpt-5.4-mini` 省钱；不碰你（Claude）的三层叶子硬化（C1），那是 `.claude/agents/` 侧的事。codex 预制 agent 定义在 `.codex/agents/*.toml`，与 `.claude/agents/*.md` 并存不冲突。
+
 ## 你走每步的固定动作（模版拼接机制）
 
 1. 读 `workflow/0X-xxx/SKILL.md` 拿**局部模版**（该步干什么、输出要求、要传达给子 agent 的约定、本步子 agent 必须回答的决策问题）

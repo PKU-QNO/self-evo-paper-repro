@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SEPR-01-pdf_preprocessing-codex-report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "role",
+    "task_scope",
+    "source_used",
+    "source_justification",
+    "pdf_type",
+    "formulas_extraction_quality",
+    "data_figures",
+    "tables_found",
+    "artifacts_written",
+    "blocked",
+    "blocked_by",
+    "decision_answers",
+    "notes"
+  ],
+  "properties": {
+    "role": {
+      "type": "string",
+      "const": "codex-exec-worker"
+    },
+    "task_scope": {
+      "type": "string",
+      "description": "一句话：本次只做 01-pdf_preprocessing 机械抽取，不做物理裁决、不定 result_class"
+    },
+    "source_used": {
+      "type": "string",
+      "enum": ["tex_source", "pdf_text_layer", "pdf_ocr"],
+      "description": "必须是 tex_source（本论文 .tex 源已提供，禁止用 PDF OCR，公式密集易错）"
+    },
+    "source_justification": {
+      "type": "string",
+      "description": "为什么用这个源；若非 tex_source 必须说明为何 tex 源不可用"
+    },
+    "pdf_type": {
+      "type": "string",
+      "enum": ["electronic", "scanned", "not_applicable_used_tex"]
+    },
+    "formulas_extraction_quality": {
+      "type": "string",
+      "enum": ["clean_latex", "partial_needs_manual_check", "image_fallback"]
+    },
+    "data_figures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fig_id", "caption", "figure_type", "needs_digitization"],
+        "properties": {
+          "fig_id": { "type": "string" },
+          "caption": { "type": "string" },
+          "figure_type": {
+            "type": "string",
+            "enum": ["data_figure", "theory_loci_figure", "field_distribution_figure", "schematic"]
+          },
+          "needs_digitization": { "type": "boolean" }
+        }
+      }
+    },
+    "tables_found": {
+      "type": "integer",
+      "description": "论文中表格数，0 也要写并在 tables.md 落盘说明"
+    },
+    "artifacts_written": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "本次写入的相对路径列表，必须覆盖 paper_text.md/formulas.md/figures.md/tables.md/figs/*.png"
+    },
+    "blocked": { "type": "boolean" },
+    "blocked_by": {
+      "type": ["string", "null"],
+      "description": "无阻塞写 null"
+    },
+    "decision_answers": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["is_scanned_need_ocr", "formulas_clean_or_image", "has_data_figures_for_digitization"],
+      "properties": {
+        "is_scanned_need_ocr": { "type": "string" },
+        "formulas_clean_or_image": { "type": "string" },
+        "has_data_figures_for_digitization": { "type": "string" }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "如实记录：遇到的问题、codex 自身表现的诚实边界（如是否真按 tex 逐条转写、是否有不确定的公式）"
+    }
+  }
+}
