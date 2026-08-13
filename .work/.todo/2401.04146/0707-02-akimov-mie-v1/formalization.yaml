@@ -1,0 +1,137 @@
+# formalization.yaml — Akimov 2401.04146 · Fig6 超吸收态 loci 复现 spec
+# 步骤: 03-reproduction_design | case: 0707-02-akimov-mie-v1 | timestamp: 20260709-01
+# 编写者: main-agent（本次跳过独立 sub-agent step03 派发 + Gate2 停等，用户已批准压缩gate、
+#   main-agent自主决策、跑到底再一次性汇报——见对话记录"这次不遵守codex了...尽快完成论文复现"）。
+# 目标图：Fig6（超吸收态 loci）——main-agent 自主选定（见 STEP-DECISION 备注），非用户逐一确认。
+# 本文件是后续 step04 代码的唯一物理输入源：代码消费本 spec，不消费论文 prose。
+
+meta:
+  paper: "arXiv 2401.04146 (Akimov, Mie scattering theory: A review of physical features and limitations)"
+  case: "0707-02-akimov-mie-v1"
+  target_figure: "Fig6"
+  target_figure_source: "main-agent 自主决策（零外部材料数据依赖 + 可复用 case 0703-01 求根机器）；figures.md 候选D；figs/Fig6.png"
+  formula_primary_source: "本论文 §3.1/§3.3 显式给出（tex:L212-380）；核心 Mie 系数复用 Bohren-Huffman 标准式（case 0703-01 已验证，本 case 直接继承同一份 scattering.py，不重新推导）"
+  formula_cross_check_source: "case 0703-01 formalization.yaml 的 equivalence 章节（300 随机点 BH vs Akimov 交叉验证 max diff 4.7e-16，本 case 复用同一套底层代码，该验证结论天然继承，不需要重跑）"
+  result_class_ceiling: "pipeline_completed（本步为设计，无仿真无物理验证）"
+  gate_status: "本次压缩 gate 流程：main-agent 自主推进不逐步停等，全部决策依据记录在案，跑完后一次性向用户汇报供事后审查。"
+
+geometry:
+  description: >
+    与 case 0703-01（Fig3）完全相同的几何设定：单一均匀各向同性球，
+    半径 R，嵌入无限大均匀外介质，完全无量纲化（q_e = k_e R，eps_ratio = ε_i/ε_e）。
+    唯一区别：Fig6 允许 eps_ratio 为复数（Fig3 限定纯实）。
+  parameters:
+    R: "符号量，不取具体值（无量纲化后消去，与 Fig3 相同）"
+    q_e: { definition: "q_e = k_e R", range: "[0, 10]", unit: "无量纲", source: "Fig6 横轴（figures.md 目视估读，与 Fig3 相同范围一致，因两图common横轴）" }
+    q_i: { definition: "q_i = k_i R = m q_e", note: "本 case m 一般为复数（eps_ratio 复数），q_i 相应为复数；scattering.py 的 mie_ab() 已支持复数 m/复数宗量（本 main-agent 已用 scipy.special.spherical_jn/yn 直接验证复数宗量返回正确值，diff vs jv/yv 半整数阶等价式 = 0.0，见下方 verification_note）", unit: "无量纲" }
+  coordinate: "球坐标，与 case 0703-01 相同"
+
+materials:
+  inside:
+    epsilon_i: "**复标量**（Fig6 核心区别：允许 Im ε_i ≠ 0，即球内材料可以有耗散/色散）"
+  outside:
+    epsilon_e: "实正标量（外介质无吸收，Im ε_e = 0，与 Fig3 相同，入射幅度分解式前提不变）"
+  effective_parameter:
+    eps_ratio: { definition: "ε_i/ε_e ∈ ℂ", range: "Re∈[-10,20]（比Fig3略外扩，覆盖figures.md目视TM负实部分支及正实部密集区）, Im∈[0,10]（figures.md目视：TM面板Im上限约3-4，TE面板约0.6-1.2，此处外扩留安全边界）", type: "复数", source: "figures.md Fig6 坐标轴目视估读（需人工核，见missing_info.md #1，本spec先用外扩范围兜底不确定性）" }
+    m_rel: { definition: "m = sqrt(ε_i/ε_e)（复数平方根，取主值 Im m ≥ 0，与 case 0703-01 负ε处理一致）" }
+  magnetic: "μ = μ_0 处处成立"
+  dispersion: "本 case 允许复数 eps_ratio（对应真实色散/耗散材料的抽象），但 Fig6 本身仍是零外部材料数据依赖的纯理论 loci 图（扫描 eps_ratio 复平面，不查表任何 Ag/Si/SiO2 色散数据）——这是选择 Fig6 而非 Fig4/5 的核心理由。"
+
+equations:
+  key_simplification:
+    description: >
+      **关键简化（main-agent 本步验证得出，优于 sub-agent step02 报告的建议方案）**：
+      不需要单独实现 a_l^(2)/b_l^(2) 公式（formulas.md 第五节 S:a_l2/S:b_l2）。
+      因为 a_l = a_l^(1) + a_l^(2)，且 a_l^(1) ≡ 1/2 恒成立（formulas.md 公式 S:cd_l1），
+      所以 a_l^(2) = 0  ⟺  a_l = 1/2（TM），同理 b_l^(2) = 0 ⟺ b_l = 1/2（TE）。
+      因此超吸收条件可以**直接用 case 0703-01 已验证的 mie_ab(l, m, q_e) 求解
+      F(eps_ratio) = a_l(q_e, eps_ratio) - 1/2 = 0 的根**，完全复用整个 scattering.py，
+      零新增物理代码、零新增公式推导——只需要新写"复数域求根"这一层数值方法。
+    verification_note: >
+      main-agent 已在 reproduction_test/mie/code/ 下直接用 python 交互验证：
+      (1) scipy.special.spherical_jn/spherical_yn 原生支持复数宗量，与 jv/yv 半整数阶
+      等价式核对 diff=0.0（解除 missing_info.md #3 的"潜在阻塞"标注）；
+      (2) mie_ab(l, m, q_e) 对复数 m 直接可用（_refractive_index 用 complex(m) 收敛类型，
+      无额外分支代码），对若干测试点（eps_ratio = -3+0.5j, -3+1j, -3+2j, 5+0.5j, 5+1j）
+      算出的 a_1 值合理（|a_1-0.5| 量级 0.1-0.5，非退化/非发散），确认代码路径通畅。
+  primary_source:
+    description: "复用 case 0703-01 的 scattering.py::mie_ab(l, m, x)，无需修改，无需新增公式实现"
+    reused_module: "reproduction_test/mie/code/scattering.py（已过 Gate3 用户裁决核对，BH §4.4 逐项核对通过）"
+    target_equation: "a_l(q_e, eps_ratio) - 1/2 = 0 （TM），b_l(q_e, eps_ratio) - 1/2 = 0（TE）"
+    complex_root: "eps_ratio = x + iy ∈ ℂ 是待求未知数（固定 q_e 时），拆成实方程组：Re[a_l(q_e,x+iy) - 0.5] = 0 且 Im[a_l(q_e,x+iy) - 0.5] = 0"
+  cross_check:
+    description: "本 case 不需要独立的 BH vs Akimov 交叉验证（T2），因为直接复用 case 0703-01 已验证的同一份 mie_ab()，该验证结论天然继承（provenance 链：case 0703-01 → 本 case，同一代码文件，同一验证记录）。"
+  cross_sections:
+    sigma_abs_sa: "σ_abs,l^sa = (π/2k_e²)(2l+1)（formulas.md 第六节，超吸收吸收上限，用于 Layer1/2 验证）"
+    equipartition: "σ_sca,l^sa = σ_abs,l^sa = (1/4)σ_sca,l^sr（formulas.md 第六节，超吸收处四等分关系，独立验证判据）"
+    normalization: "σ_abs,l^sa/(πR²) = (2l+1)/(2 q_e²)，用 q_e 直接算，不需要具体 R"
+
+solver:
+  type: "解析闭式系数 + 数值求根（二维复数域，非一维实数域）——比 Fig3 的 brentq 切片复杂，但仍是精确求根，不是优化/拟合"
+  problem_statement: >
+    在 q_e ∈ (0,10] 的每个切片上，对 l=1,2,3、TM(a_l)/TE(b_l) 各自求解复数方程
+    a_l(q_e, z) = 1/2（或 b_l(q_e, z) = 1/2），z = eps_ratio ∈ ℂ，
+    求出该 q_e 下的全部根（原文明确"multiple states"，非单一解）。
+  recommended_strategy: |
+    主方案：
+    1. 复数方程 F(z) = a_l(q_e,z) - 0.5 拆成实值二元函数 F1(x,y)=Re F(x+iy), F2(x,y)=Im F(x+iy)；
+    2. 用 scipy.optimize.root(fun=[F1,F2], x0=(x0,y0), method='hybr') 做二维非线性方程组求根；
+    3. 多起点覆盖：在 (x,y) ∈ [-10,20]×[0,10] 网格上撒足够密的起点（建议至少 40x40=1600 起点/q_e切片，
+       求根成本远低于 Fig3 的密网格扫描,可接受）；起点也可用上一 q_e 切片已收敛的根作为 warm start（延拓）；
+    4. 去重：对同一 q_e 切片收敛到的多个根，用欧氏距离阈值（如 1e-6）去重合并；
+    5. 验证判据：解出 z 后代回 mie_ab 断言 |a_l(q_e,z) - 0.5| < 1e-8（或 b_l 同理）；
+       并用等分关系 σ_sca,l^sa = σ_abs,l^sa 独立交叉验证（Layer2）；
+    6. 分支延拓：q_e 由小到大扫描，用上一步收敛的根集合作为下一步的初值候选（外加少量新增起点防止
+       漏掉在某个 q_e 处新生成的分支），得到沿 q_e 连续变化的分支曲线族；
+    7. 按论文完备性线索自查：统计 Re(z)>0 与 Re(z)<0 的分支数，核对"TM/TE 在 Re>0 区域均有多个态；
+       仅 TM 在 Re<0 区域恰好一个态，TE 在 Re<0 区域零个态"（formulas.md 第六节逐字引用，可作硬判据）。
+  fallback_strategy: |
+    若 scipy.optimize.root 在某些区域收敛困难（如靠近分支交叉/退化点），
+    备选用二维网格暴力搜索 |F(z)|² 极小值候选点，再用 Newton/root 精修——
+    与 Fig3 fallback_strategy（2D contour）同一思路的复数版本。
+  special_cases:
+    - "z 实数轴上的行为：当 y=0（纯实 eps_ratio）时，a_l 一般不为实数（不像 Fig3 那样有酉性化简），
+       所以求解仍需完整二维方程组，不能像 Fig3 那样退化到一维——这是本质区别，不是特例。"
+    - "eps_ratio = 0 附近：m=0 退化点，起点网格避开（±1e-6 邻域），与 Fig3 处理方式相同"
+    - "q_e → 0 极限：需要检查是否所有分支退化或发散（Rayleigh 极限下 a_l → 0 for all eps_ratio，
+       超吸收条件 a_l=1/2 在 q_e→0 时可能无解或解发散到 |z|→∞ ——数值上从 q_e_min=0.05 附近开始扫描，
+       不强行覆盖 q_e=0 本身，与Fig3的q_e_min=0.0125类似但留更大安全边界因为此处问题维度更高）"
+  environment: "本地 Python（numpy + scipy + matplotlib），预计单核数分钟到十余分钟级（二维求根+多起点，比Fig3更耗时但仍可接受）；不需要 Magnus/COMSOL/HPC"
+
+observables:
+  description: "与 Fig6 六大面板（每面板2个子图：Re和Im）对应的 loci 曲线族"
+  panels:
+    - { panel: "l=1 TM", quantity: "{a_1(q_e,z)=1/2} 的全部复数根 z(q_e)，Re/Im 各画一条曲线族" }
+    - { panel: "l=2 TM", quantity: "{a_2=1/2}" }
+    - { panel: "l=3 TM", quantity: "{a_3=1/2}" }
+    - { panel: "l=1 TE", quantity: "{b_1=1/2}" }
+    - { panel: "l=2 TE", quantity: "{b_2=1/2}" }
+    - { panel: "l=3 TE", quantity: "{b_3=1/2}" }
+  axes: { x: "q_e ∈ [0,10]（两个子图共享）", y_upper: "Re(ε_i/ε_e)", y_lower: "Im(ε_i/ε_e)" }
+  plot_layout: "每个(l,偏振)对应一对纵向堆叠子图（上Re/下Im），与Fig3的单子图布局不同（figures.md已判定，见step02产物）"
+  auxiliary_observables: "σ_abs,l^sa（吸收上限）、σ_sca,l^sa（散射，等分关系）供 Layer1/2 验证；复用 scattering.py::compute_cross_sections 计算实际截面对比理论上限"
+
+assumptions:
+  - "线性、各向同性、均匀介质；球内外 ε 均为常数标量（球内 ε_i 允许复数，球外 ε_e 仍纯实）"
+  - "非磁性：μ = μ_0 处处成立"
+  - "ε_i/ε_e 一般为复数（Fig6 核心区别于Fig3）；不要求酉性，不能用 Fig3 的实数化捷径"
+  - "外介质无吸收 Im ε_e = 0（与 Fig3 相同）"
+  - "时谐约定 e^{-iωt}，散射场用 h_l^(1)（与 case 0703-01/scattering.py 一致，无需符号翻转）"
+  - "经典 Mie 框架（论文 §2-§3.3）；§4 修正不在本 case 范围"
+  - "无量纲化：全部物理内容由 (q_e, ε_i/ε_e) 两个量承载，R、ω、E_0 不取具体值"
+  - "复用 case 0703-01 已验证的 mie_ab() 核心实现，不重新推导/不重新验证 BH 公式本身"
+
+missing_fields:
+  - field: "论文 Fig6 的数值生成方法"
+    detail: "论文原文只说'optimized for every size parameter q_e'，未说明具体优化器/初值/收敛判据——与Fig3类似的信息落差，方法自选，结果应与图吻合（missing_info.md已标注）"
+  - field: "Fig6坐标轴精确范围"
+    detail: "目视估读非像素精确值，本spec的eps_ratio range用外扩范围兜底（Re[-10,20], Im[0,10]），求根完成后可用实际收敛的根分布反推更精确范围，用于绘图时再收紧坐标轴"
+  - field: "Fig6各面板精确分支数"
+    detail: "目视估计TM/TE约10-12支，本spec不预设固定分支数，让多起点撒点+去重自然发现全部分支，求根后与图上数字标签核对（step02已建议此顺序）"
+
+provenance:
+  source_artifact: "本case step01/02产物（formulas.md第五/六节、figures.md Fig6、paper_understanding.md、missing_info.md）+ case 0703-01的scattering.py与formalization.yaml（复用/继承部分）+ main-agent本步骤直接验证（scipy复数宗量支持、mie_ab复数m可用性、a_l^(2)简化推导）"
+  evidence_type: "论文原文公式转写（sub-agent已做）+ main-agent独立数值验证（python交互式测试，diff=0.0确认scipy复数宗量正确、mie_ab对复数m给出合理非退化值）+ 关键简化推导（a_l=1/2等价条件，避免重新实现a_l^(2)公式）"
+  timestamp_version: "20260709-01"
+  scope_applicability: "仅Fig6复现（单球经典Mie，复数ε比，超吸收态）；求解策略（二维复数求根+延拓）为本case自行设计，非论文给出，仅适用于本类"optimized复数loci"问题，不直接适用于其他物理问题不做过度泛化"
+  confidence_result_class: "高（spec设计+关键简化已用真实代码验证不是纸面推导）/ pipeline_completed"

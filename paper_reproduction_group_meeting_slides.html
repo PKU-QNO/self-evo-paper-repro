@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>论文复现线组会汇报</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #5e697d;
+      --line: #d9dee8;
+      --panel: #f7f9fc;
+      --blue: #2463eb;
+      --green: #16805a;
+      --amber: #a45d08;
+      --red: #b42318;
+      --violet: #6f3cc3;
+      --bg: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: "Segoe UI", "Microsoft YaHei", Arial, sans-serif;
+      color: var(--ink);
+      background: #e9edf5;
+      overflow: hidden;
+    }
+
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+    }
+
+    .slide {
+      width: min(100vw, 1280px);
+      height: min(100vh, 720px);
+      aspect-ratio: 16 / 9;
+      background: var(--bg);
+      display: none;
+      padding: 46px 58px 42px;
+      position: relative;
+      box-shadow: 0 24px 80px rgba(23, 32, 51, 0.22);
+      overflow: hidden;
+    }
+
+    .slide.active { display: flex; flex-direction: column; }
+
+    .slide::after {
+      content: attr(data-page);
+      position: absolute;
+      right: 34px;
+      bottom: 22px;
+      color: #8a94a8;
+      font-size: 15px;
+    }
+
+    .eyebrow {
+      color: var(--blue);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0;
+      margin: 0 0 8px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 46px; line-height: 1.12; letter-spacing: 0; max-width: 970px; }
+    h2 { font-size: 34px; line-height: 1.18; letter-spacing: 0; }
+    h3 { font-size: 20px; line-height: 1.25; margin-bottom: 8px; }
+    p, li, td, th { font-size: 19px; line-height: 1.42; }
+    .small { font-size: 15px; line-height: 1.35; }
+    .lead { font-size: 24px; line-height: 1.35; color: var(--muted); max-width: 1040px; margin-top: 18px; }
+    .body { margin-top: 26px; flex: 1; }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+
+    .panel.tight { padding: 14px 16px; }
+    .panel.white { background: #fff; }
+    .panel strong { color: var(--ink); }
+
+    ul { margin: 10px 0 0; padding-left: 22px; }
+    li + li { margin-top: 8px; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; padding: 10px 9px; }
+    th { font-size: 15px; color: var(--muted); font-weight: 700; background: #f3f6fb; }
+    td { font-size: 16px; }
+
+    .tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      border: 1px solid currentColor;
+      background: #fff;
+    }
+    .blue { color: var(--blue); }
+    .green { color: var(--green); }
+    .amber { color: var(--amber); }
+    .red { color: var(--red); }
+    .violet { color: var(--violet); }
+    .muted { color: var(--muted); }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .step {
+      min-height: 92px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 11px;
+      background: #fff;
+      position: relative;
+    }
+    .step b { display: block; font-size: 15px; margin-bottom: 5px; color: var(--blue); }
+    .step span { display: block; font-size: 13px; line-height: 1.3; color: var(--muted); }
+    .gate { border-color: #ebb75d; background: #fff8ed; }
+    .gate b { color: var(--amber); }
+
+    .metric {
+      border-left: 5px solid var(--blue);
+      padding-left: 14px;
+    }
+    .metric .num { font-size: 32px; font-weight: 800; line-height: 1.1; }
+    .metric .label { font-size: 15px; color: var(--muted); margin-top: 5px; }
+
+    .footer-note {
+      position: absolute;
+      left: 58px;
+      bottom: 22px;
+      color: #8a94a8;
+      font-size: 14px;
+    }
+
+    .controls {
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(23, 32, 51, 0.78);
+      color: #fff;
+      font-size: 13px;
+      z-index: 10;
+    }
+    .controls button {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 0;
+      background: #fff;
+      color: var(--ink);
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .progress {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 4px;
+      width: 100vw;
+      background: #cfd6e3;
+      z-index: 20;
+    }
+    .progress > div { height: 100%; width: 0; background: var(--blue); }
+
+    @media print {
+      body { background: #fff; overflow: visible; }
+      .deck { display: block; height: auto; }
+      .slide {
+        display: flex !important;
+        page-break-after: always;
+        box-shadow: none;
+        width: 100vw;
+        height: 56.25vw;
+      }
+      .controls, .progress { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress"><div id="bar"></div></div>
+  <main class="deck">
+    <section class="slide active" data-page="1 / 11">
+      <p class="eyebrow">论文复现线交接 | 2026-07-09</p>
+      <h1>组会重点：复现结果、失败边界、需要光学组给什么</h1>
+      <p class="lead">先讲论文复现，不把会议变成 workflow 展示。核心口径：Akimov Fig.3 是 <span class="tag green">partial_physical_match</span>，Degiron 还没有物理复现成功。</p>
+      <div class="body grid3">
+        <div class="panel"><h3>Akimov Mie Fig.3</h3><p>纯 Python 解析复现。曲线经独立求根确认正确，但论文图数字化长尾误差仍超阈。</p></div>
+        <div class="panel"><h3>Degiron COMSOL Fig.3</h3><p>Magnus/COMSOL 链路已打通，full-vector mode analysis 仍未跑出可信 neff。</p></div>
+        <div class="panel"><h3>可能需要的协助</h3><p>后续希望参考 COMSOL 6.3 GUI 导出的最小 2D mode-analysis .java 或 .mph 模板。</p></div>
+      </div>
+      <p class="footer-note">键盘方向键翻页；打印可直接导出 PDF。</p>
+    </section>
+
+    <section class="slide" data-page="2 / 11">
+      <p class="eyebrow">当前状态</p>
+      <h2>三类状态必须分开：流程跑通、程序跑通、物理复现成功</h2>
+      <div class="body">
+        <table>
+          <thead><tr><th>目标</th><th>当前状态</th><th>可以说</th><th>不能说</th></tr></thead>
+          <tbody>
+            <tr><td>Akimov Fig.3</td><td><span class="tag green">partial_physical_match</span></td><td>Fig.3 曲线数学复现正确；物理约束、公式交叉验证、完备性、非共振支对比均通过。</td><td>不能说整篇论文完全复现；不能说 physical_reproduction_success。</td></tr>
+            <tr><td>Degiron Fig.3 v1</td><td><span class="tag amber">surrogate_fallback</span></td><td>提交、日志、CSV、出图流程跑通。</td><td>不能说是 COMSOL 物理复现；最终图是 fallback。</td></tr>
+            <tr><td>Degiron Fig.3 v2</td><td><span class="tag red">diagnostic_only</span></td><td>定位到 full-vector mode-analysis 设置是 blocker。</td><td>不能说恢复反交叉；也不能说 Im(neff) 可信。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="slide" data-page="3 / 11">
+      <p class="eyebrow">为什么慢</p>
+      <h2>慢不是因为只画了几张图，而是先把“不能自欺”的基础设施搭起来</h2>
+      <div class="body grid2">
+        <div class="panel">
+          <h3>V1 / V2 / V3 演进</h3>
+          <ul>
+            <li><strong>V1</strong>：可自迭代 DSL，自由度太高，风险包括拓扑漂移、reward hacking、记忆污染。</li>
+            <li><strong>V2</strong>：固定拓扑 runner，更安全，但工程成本偏高，真实复现尚未跑通。</li>
+            <li><strong>V3</strong>：Claude 三层子 agent + 人工 gate + deterministic verifier，是当前方案。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>实际阻力</h3>
+          <ul>
+            <li>Claude 中转站和工具链不稳定，长上下文下 tool-call 失败需要熔断。</li>
+            <li>子 agent 自称完成不等于磁盘产物完整，需要逐项核验。</li>
+            <li>每篇论文都要人工判断“物理上是不是真的复现”。</li>
+            <li>个人原因会上口述，文档不展开。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-page="4 / 11">
+      <p class="eyebrow">主要成果</p>
+      <h2>成果不只是图，而是一套可审计复现系统和首批 case 产物</h2>
+      <div class="body grid2">
+        <div class="panel">
+          <h3>Agent 系统</h3>
+          <ul>
+            <li>main-agent / sub-agent / leaf 三层执行结构。</li>
+            <li>10 步论文复现流程。</li>
+            <li>4 个 human gate。</li>
+            <li>7 级 result_class，防止把 pipeline 成功说成物理成功。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>复现产物</h3>
+          <ul>
+            <li>Akimov Fig.3：报告、简报、代码、数据、图、benchmark、capsule、中文 LaTeX 复现论文。</li>
+            <li>Degiron v1/v2：COMSOL/Magnus 诊断报告和失败链路。</li>
+            <li>后续会整理 paper-specific / method-specific skill。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-page="5 / 11">
+      <p class="eyebrow">我们到底在干什么</p>
+      <h2>一篇论文不是“一步画图”，而是 step + artifact + verifier + gate</h2>
+      <div class="body">
+        <div class="timeline">
+          <div class="step"><b>01 PDF</b><span>提取正文、公式、图表；发现预设 Qsca 图不存在。</span></div>
+          <div class="step"><b>02 Reading</b><span>列候选目标图、参数表、缺失信息。</span></div>
+          <div class="step gate"><b>Gate1</b><span>人工选 Fig.3，锁定 BH 教材为公式主源。</span></div>
+          <div class="step"><b>03 Design</b><span>formalization + repro_plan，把物理问题化成求根任务。</span></div>
+          <div class="step gate"><b>Gate2</b><span>核 spec、阈值和支数完备性硬判据。</span></div>
+          <div class="step"><b>04 Implement</b><span>Mie 核、Akimov 交叉验证、Layer1 verifier。</span></div>
+          <div class="step gate"><b>Gate3</b><span>核公式；修正假阴性的 verifier。</span></div>
+          <div class="step"><b>05 Audit</b><span>8 个对抗 probe，默认怀疑实现有错。</span></div>
+          <div class="step"><b>06 Run</b><span>六面板求根、contour 完备性、论文图数字化。</span></div>
+          <div class="step"><b>07-08 Verify</b><span>三层验证；量化对比暴露 p95 长尾。</span></div>
+          <div class="step gate"><b>Gate4</b><span>独立求根 Δ=0.0000，裁决 result_class。</span></div>
+          <div class="step"><b>09-11 Package</b><span>扰动自检、报告、manifest、capsule、交付包。</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-page="6 / 11">
+      <p class="eyebrow">Akimov 首篇流程，上半段</p>
+      <h2>先防止目标错、公式错、验证标准错</h2>
+      <div class="body grid3">
+        <div class="panel">
+          <h3>Step01-02</h3>
+          <ul>
+            <li>提取 12 张图和公式。</li>
+            <li>发现预设目标 Qsca 图不存在。</li>
+            <li>列出 Fig.3 / Fig.5 / Fig.6 三个候选。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Gate1</h3>
+          <ul>
+            <li>目标图选 Fig.3 loci。</li>
+            <li>参数表通过。</li>
+            <li>BH 教材公式为主源，Akimov 公式交叉验证。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Step03 + Gate2</h3>
+          <ul>
+            <li>变量：q_e=k_eR，epsilon_i/epsilon_e。</li>
+            <li>无损酉性把 a_l=0/1 变成实方程求根。</li>
+            <li>加硬判据：曲线支数逐面板一致。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-page="7 / 11">
+      <p class="eyebrow">Akimov 首篇流程，下半段</p>
+      <h2>后面重点是验证，不是把图画出来就结束</h2>
+      <div class="body grid3">
+        <div class="panel">
+          <h3>Step04 + Gate3</h3>
+          <ul>
+            <li>实现 BH Mie 核和 Akimov 独立公式。</li>
+            <li>BH vs Akimov 差异约 10^-15。</li>
+            <li>大尺寸 verifier 初版假阴性，Gate3 改成趋势判据。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Step05-08</h3>
+          <ul>
+            <li>8 个对抗 probe 未发现实质 bug。</li>
+            <li>切片求根 + contour 支数核对，覆盖 >99.8%。</li>
+            <li>Layer3：median 通过，p95 长尾超标。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Gate4 + Step09-11</h3>
+          <ul>
+            <li>独立绕开原脚本重新求根，Δ=0.0000。</li>
+            <li>接受为 partial_physical_match，不放宽阈值。</li>
+            <li>封装 .result、manifest、capsule、报告和中文复现论文。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-page="8 / 11">
+      <p class="eyebrow">Akimov 结果</p>
+      <h2>Fig.3 曲线本身正确，但仍只报 partial_physical_match</h2>
+      <div class="body grid4">
+        <div class="metric"><div class="num">10^-15</div><div class="label">BH 与 Akimov 公式交叉验证量级</div></div>
+        <div class="metric"><div class="num">>99.8%</div><div class="label">contour 与切片法覆盖率</div></div>
+        <div class="metric"><div class="num">0.00746</div><div class="label">Layer3 全局 median，达标</div></div>
+        <div class="metric"><div class="num">0.04258</div><div class="label">Layer3 全局 p95，超标</div></div>
+      </div>
+      <div class="body grid2" style="margin-top: 18px;">
+        <div class="panel">
+          <h3>最硬证据</h3>
+          <p>用已验证 Mie 核完全绕开原求根脚本，重新求 sr roots，与 SEPR CSV 逐点对比，差异 <strong>Δ=0.0000</strong>。</p>
+        </div>
+        <div class="panel">
+          <h3>诚实边界</h3>
+          <p>sr 分支长尾和 TM 三面板 median 略超阈；数字化偏差方向性检验未补完。因此不是 physical_reproduction_success。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-page="9 / 11">
+      <p class="eyebrow">Degiron COMSOL</p>
+      <h2>工程链路跑通了，物理 mode analysis 还没跑通</h2>
+      <div class="body grid2">
+        <div class="panel">
+          <h3>已经打通</h3>
+          <ul>
+            <li>Magnus 上 COMSOL runtime image 可运行。</li>
+            <li>Java 模型可 batch 编译提交。</li>
+            <li>能保存 .mph，能从 stdout 提取 CSV。</li>
+            <li>能自动生成图、报告、失败日志和 job id 记录。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>没有打通</h3>
+          <ul>
+            <li>v1 是 surrogate_fallback。</li>
+            <li>v2 标量 PDE 没有恢复反交叉。</li>
+            <li>孤立 SU-8 mode-analysis probe 能进 eigensolver，但 matrix factorization failed。</li>
+            <li>当前 blocker 是 COMSOL 6.3 Wave Optics/RF mode-analysis 设置。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-page="10 / 11">
+      <p class="eyebrow">下一步</p>
+      <h2>短期把 Degiron blocker 打掉，同时选择 Mie 第二轮目标</h2>
+      <div class="body grid2">
+        <div class="panel">
+          <h3>执行顺序</h3>
+          <ul>
+            <li>拿到或对齐最小 mode-analysis 模板。</li>
+            <li>先让孤立 SU-8 waveguide 出可信 neff。</li>
+            <li>再做孤立 Au LR-SPP。</li>
+            <li>再做 Au+SU8 两点 smoke。</li>
+            <li>最后做完整 t sweep 和 branch classification。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Mie 第二轮二选一</h3>
+          <ul>
+            <li>Fig.5(c)(f)：材料色散下的 |a1|, |b1| 谱，需要固定材料色散数据源。</li>
+            <li>Fig.6：超吸收态复根，物理更有意思，但需要复数求根方程。</li>
+          </ul>
+          <p class="small muted" style="margin-top: 16px;">内部证据入口：SEPR README.md、.result/2401.04146/full_report.md、WORK_LOG/01-akimov-mie-v1.md。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-page="11 / 11">
+      <p class="eyebrow">可能需要的协助</p>
+      <h2>后续如果条件允许，希望参考最小可运行 COMSOL 2D mode-analysis 模板</h2>
+      <div class="body grid2">
+        <div class="panel">
+          <h3>模板信息</h3>
+          <ul>
+            <li>COMSOL 6.3 GUI 搭建，导出 .java 或 .mph。</li>
+            <li>2D 横截面 mode analysis，传播方向 z。</li>
+            <li>波长 1.55 微米，可先用矩形 dielectric waveguide。</li>
+            <li>能输出可信 neff 或 beta。</li>
+            <li>包含 physics/study/solver/search shift/mode count/PML/mesh/result expression。</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Degiron 信息确认</h3>
+          <ul>
+            <li>BCB 总厚度 t 的定义和坐标原点。</li>
+            <li>Au、SU-8、gap、垂直位置几何解释。</li>
+            <li>材料参数来源和边界/PML 建议。</li>
+            <li>mesh 推荐尺度、search shift、branch classification 规则。</li>
+            <li>孤立 SU-8 / Au LR-SPP 的 neff 与损耗范围。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="controls">
+    <button id="prev" aria-label="上一页">‹</button>
+    <span id="counter">1 / 11</span>
+    <button id="next" aria-label="下一页">›</button>
+  </div>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const counter = document.getElementById("counter");
+    const bar = document.getElementById("bar");
+    let current = 0;
+
+    function show(index) {
+      current = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, i) => slide.classList.toggle("active", i === current));
+      counter.textContent = `${current + 1} / ${slides.length}`;
+      bar.style.width = `${((current + 1) / slides.length) * 100}%`;
+      location.hash = String(current + 1);
+    }
+
+    document.getElementById("prev").addEventListener("click", () => show(current - 1));
+    document.getElementById("next").addEventListener("click", () => show(current + 1));
+    document.addEventListener("keydown", (event) => {
+      if (["ArrowRight", "PageDown", " "].includes(event.key)) show(current + 1);
+      if (["ArrowLeft", "PageUp"].includes(event.key)) show(current - 1);
+      if (event.key === "Home") show(0);
+      if (event.key === "End") show(slides.length - 1);
+    });
+
+    const initial = Number(location.hash.replace("#", "")) - 1;
+    show(Number.isFinite(initial) && initial >= 0 ? initial : 0);
+  </script>
+</body>
+</html>
